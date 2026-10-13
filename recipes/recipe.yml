@@ -71,12 +71,17 @@ modules:
       - system76-io
 
       # --- Périphériques Razer, volants de course & matériel exotique ---
+      - openrazer
       - kmod-openrazer
+      - hid-fanatecff
       - kmod-hid-fanatecff
       - hid-fanatecff-akmod-modules
+      - hid-tmff2
       - kmod-hid-tmff2
       - hid-tmff2-akmod-modules
+      - t150-driver
       - kmod-t150-driver
+      - new-lg4ff
       - kmod-new-lg4ff
       - new-lg4ff-akmod-modules
       - oversteer-udev
@@ -101,6 +106,7 @@ modules:
       # --- Accessibilité, Braille & Synthèse vocale ---
       - brltty
       - brlapi
+      - python3-brlapi
       - orca
       - espeak-ng
       - speech-dispatcher
