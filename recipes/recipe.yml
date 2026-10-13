@@ -157,6 +157,7 @@ modules:
       - cage
       - gmodpatchtool
       - yelp
+      - bazzite-updater
 
   # 3. Exécution du script de debloat complet GNOME & wallpapers
   - type: script
@@ -175,6 +176,7 @@ modules:
   - type: default-flatpaks
     configurations:
       - scope: system
+        notify: false
         install:
           # --- Applications GNOME de base ---
           - org.gnome.Calculator

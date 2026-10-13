@@ -113,13 +113,19 @@ toggle-flatpak-setup ACTION="":
 
     case "${OPTION}" in
         "Désactiver le service (Recommandé)"|"disable")
-            echo "Désactivation du timer system-flatpak-setup..."
-            sudo systemctl disable --now "$SERVICE"
-            echo -e "${yellow}${bold}Désactivé !${normal} Vous n'aurez plus la notification au prochain démarrage."
+            echo "Désactivation de l'installation automatique des Flatpaks..."
+            if command -v bluebuild-flatpak-manager >/dev/null 2>&1; then
+                bluebuild-flatpak-manager disable 2>/dev/null || true
+            fi
+            sudo systemctl disable --now "$SERVICE" default-flatpaks-system.service default-flatpaks-user.service 2>/dev/null || true
+            echo -e "${yellow}${bold}Désactivé !${normal} L'installation automatique est désactivée au démarrage."
             ;;
         "Activer le service"|"enable")
-            echo "Activation du timer system-flatpak-setup..."
-            sudo systemctl enable --now "$SERVICE"
+            echo "Activation de l'installation automatique des Flatpaks..."
+            if command -v bluebuild-flatpak-manager >/dev/null 2>&1; then
+                bluebuild-flatpak-manager enable 2>/dev/null || true
+            fi
+            sudo systemctl enable --now "$SERVICE" 2>/dev/null || true
             echo -e "${green}${bold}Activé !${normal} Le service se lancera au prochain démarrage."
             ;;
         *)
