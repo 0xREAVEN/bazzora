@@ -66,8 +66,11 @@ rm -f /etc/dconf/db/distro.d/*compiz* 2>/dev/null || true
 rm -f /etc/dconf/db/distro.d/00-bazzite-desktop-silverblue-global 2>/dev/null || true
 rm -f /etc/dconf/db/distro.d/01-bazzite-desktop-silverblue-folders 2>/dev/null || true
 
-# Configuration des raccourcis claviers propres (Ctrl+Alt+T pour Ptyxis, Ctrl+Shift+Esc pour Mission Center)
+# Configuration des raccourcis claviers propres (avec déclaration de la liste parente)
 cat << 'EOF' > /etc/dconf/db/distro.d/00-bazzora-global
+[org/gnome/settings-daemon/plugins/media-keys]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/']
+
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
 binding='<Control><Alt>t'
 command='ptyxis --new-window'
@@ -80,7 +83,7 @@ name='Mission Center'
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
 binding='<Control><Shift>Escape'
-command="flatpak run io.missioncenter.MissionCenter"
+command='flatpak run io.missioncenter.MissionCenter'
 name='Mission Center'
 EOF
 

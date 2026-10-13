@@ -35,12 +35,12 @@ restore-skel:
     case "$choice" in
         M|m)
             echo "📁 Copie uniquement des fichiers manquants..."
-            cp -rn /etc/skel/. $HOME/
+            cp -r --update=none /etc/skel/. "$HOME/"
             echo -e "✅ \033[32mFichiers manquants restaurés !\033[0m"
             ;;
         E|e)
             echo "⚠️ Copie et écrasement des fichiers existants..."
-            cp -r /etc/skel/. $HOME/
+            cp -r /etc/skel/. "$HOME/"
             echo -e "✅ \033[32mDossier personnel réinitialisé avec les paramètres Bazzora !\033[0m"
             ;;
         *)
@@ -51,10 +51,10 @@ restore-skel:
 
     # Configuration automatique de Fish et de Ptyxis
     if command -v fish >/dev/null 2>&1; then
-        FISH_PATH=$(which fish)
+        FISH_PATH=$(command -v fish)
         if [ "$SHELL" != "$FISH_PATH" ]; then
             echo "🐟 Définition de Fish comme shell par défaut..."
-            chsh -s "$FISH_PATH" 2>/dev/null || true
+            chsh -s "$FISH_PATH" || true
         fi
         if command -v gsettings >/dev/null 2>&1; then
             PROFILE_ID=$(gsettings get org.gnome.Ptyxis default-profile-uuid 2>/dev/null | tr -d "'" || true)
