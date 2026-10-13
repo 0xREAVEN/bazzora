@@ -97,7 +97,7 @@ name='X-Pardus-Apps.directory'
 translate=true
 
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['system-update.desktop', 'tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'yelp.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'bazzite-documentation.desktop', 'bazzite-landing.desktop', 'discourse.desktop', 'de.leopoldluley.Clapgrep.desktop', 'btrfs-assistant.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop']
+apps=['tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'btrfs-assistant.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'io.github.rfrench3.bazzite-updater.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
@@ -139,6 +139,9 @@ rm -f /etc/skel/.config/autostart/bazzite-portal.desktop
 rm -f /etc/profile.d/bazzite-neofetch.sh
 rm -f /usr/share/fish/vendor_conf.d/bazzite-neofetch.fish
 
+# Configuration de Fish comme shell par défaut pour les futurs utilisateurs
+sed -i 's|SHELL=/bin/bash|SHELL=/usr/bin/fish|' /etc/default/useradd 2>/dev/null || true
+
 echo "5. Suppression des fonds d'écran et branding Bazzite/Steam Deck..."
 rm -rf /usr/share/wallpapers/*
 rm -rf /usr/share/backgrounds/bazzite*
@@ -176,5 +179,21 @@ echo "6. Neutralisation sécurisée des recettes ujust devenues obsolètes..."
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-waydroid.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-cockpit.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/90-bazzite-de.just
+
+echo "7. Suppression des raccourcis d'applications obsolètes ou indésirables..."
+# Raccourcis résiduels Waydroid (Force Restart, Market, etc.)
+rm -f /usr/share/applications/*waydroid*.desktop /usr/share/applications/Waydroid*.desktop
+
+# Liens web Bazzite (Documentation, Discourse, Landing)
+rm -f /usr/share/applications/bazzite-documentation.desktop
+rm -f /usr/share/applications/bazzite-landing.desktop
+rm -f /usr/share/applications/discourse.desktop
+
+# Aide GNOME (Yelp)
+rm -f /usr/share/applications/org.gnome.Yelp.desktop
+rm -f /usr/share/applications/*yelp*.desktop
+
+# Ancien raccourci de mise à jour fait maison
+rm -f /usr/share/applications/system-update.desktop
 
 echo "=== Debloat Bazzora terminé avec succès ==="

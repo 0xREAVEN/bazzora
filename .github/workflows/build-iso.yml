@@ -1,0 +1,48 @@
+name: Build Installer ISO
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    name: Build Bazzora Installer ISO
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Maximize Build Space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 8192
+          swap-size-mb: 4096
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+
+      - name: Build Container Installer ISO
+        uses: jasonn3/build-container-installer@main
+        id: build
+        with:
+          arch: x86_64
+          image_name: bazzora
+          image_repo: ghcr.io/0xreaven
+          image_tag: latest
+          version: 44
+          variant: Silverblue
+          iso_name: bazzora-latest.iso
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazzora-latest-iso
+          path: |
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
+          if-no-files-found: error
+          retention-days: 7

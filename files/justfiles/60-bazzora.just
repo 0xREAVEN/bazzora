@@ -24,27 +24,48 @@ setup-gsconnect:
         *) echo "Action annulée." ;;
     esac
 
-# Restaure les configurations par défaut du système (/etc/skel)
+# Restaure les configurations du système (/etc/skel), Fish et le terminal Ptyxis
 restore-skel:
     #!/usr/bin/bash
     set -euo pipefail
-    echo -e "\033[1mRestauration du dossier personnel (/etc/skel)\033[0m"
-    echo "Le dossier /etc/skel contient les fichiers de configuration par défaut du système (ex: .bashrc, .config...)."
+    echo -e "\033[1mInitialisation des configurations Bazzora (/etc/skel)\033[0m"
+    echo "Cette commande déploie vos configurations Fish, Starship, MangoHud et configure Ptyxis."
     echo ""
     read -p "Voulez-vous (M)anquants (copier sans écraser), (E)craser tout, ou (A)nnuler ? " choice
     case "$choice" in
         M|m)
             echo "📁 Copie uniquement des fichiers manquants..."
             cp -rn /etc/skel/. $HOME/
-            echo -e "✅ \033[32mFichiers manquants restaurés ! Tes configurations actuelles n'ont pas été touchées.\033[0m"
+            echo -e "✅ \033[32mFichiers manquants restaurés !\033[0m"
             ;;
         E|e)
             echo "⚠️ Copie et écrasement des fichiers existants..."
             cp -r /etc/skel/. $HOME/
-            echo -e "✅ \033[32mDossier personnel réinitialisé avec les paramètres par défaut !\033[0m"
+            echo -e "✅ \033[32mDossier personnel réinitialisé avec les paramètres Bazzora !\033[0m"
             ;;
-        *) echo "Action annulée." ;;
+        *)
+            echo "Action annulée."
+            exit 0
+            ;;
     esac
+
+    # Configuration automatique de Fish et de Ptyxis
+    if command -v fish >/dev/null 2>&1; then
+        FISH_PATH=$(which fish)
+        if [ "$SHELL" != "$FISH_PATH" ]; then
+            echo "🐟 Définition de Fish comme shell par défaut..."
+            chsh -s "$FISH_PATH" 2>/dev/null || true
+        fi
+        if command -v gsettings >/dev/null 2>&1; then
+            PROFILE_ID=$(gsettings get org.gnome.Ptyxis default-profile-uuid 2>/dev/null | tr -d "'" || true)
+            if [ -n "$PROFILE_ID" ]; then
+                echo "💻 Configuration automatique du profil Ptyxis pour Fish..."
+                gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ use-custom-command true 2>/dev/null || true
+                gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ custom-command "$FISH_PATH" 2>/dev/null || true
+            fi
+        fi
+        echo -e "🎉 \033[32mFish et Starship sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
+    fi
 
 # Activer ou désactiver l'installation automatique des Flatpaks au démarrage (pour éviter le spam de notifications). Options: status | enable | disable
 [group("system")]
