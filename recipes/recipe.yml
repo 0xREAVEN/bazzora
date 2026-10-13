@@ -26,12 +26,102 @@ modules:
       # --- Lanceurs non désirés ---
       - lutris
 
-      # --- Matériel non AMD & Spécificités laptop/APU mobile non requises ---
+      # --- Démons lourds & Résidus Bazzite / KDE (Gain RAM & CPU) ---
+      - bees
+      - snapper
+      - btrfs-assistant
+      - steamdeck-kde-presets-desktop
+      - krunner-bazaar
+      - krunner-yafti
+
+      # --- Microcodes & Pilotes Intel / Nvidia (Machine 100% AMD) ---
+      - nvidia-gpu-firmware
+      - intel-gpu-firmware
+      - intel-npu-firmware
+      - intel-vsc-firmware
+      - intel-audio-firmware
       - intel-opencl
+      - intel-gmmlib
+      - intel-igc
+      - intel-igc-libs
+      - intel-lpmd
+      - intel-mediasdk
+      - intel-opencl-clang
+      - intel-vaapi-driver
+      - intel-vpl-gpu-rt
+      - libva-intel-media-driver
+
+      # --- Hyperviseurs & Machines Virtuelles (Inutiles en bare-metal) ---
+      - open-vm-tools
+      - open-vm-tools-desktop
+      - virtualbox-guest-additions
+      - hyperv-daemons
+      - hypervkvpd
+      - hypervvssd
+      - hypervfcopyd
+      - qemu-guest-agent
+      - spice-vdagent
+      - spice-webdavd
+
+      # --- Matériel non AMD & Spécificités laptop/APU mobile non requises ---
       - framework-system
       - fw-ectool
       - fw-fanctrl
       - ryzenadj
+      - kmod-system76-driver
+      - kmod-system76-io
+      - system76-driver
+      - system76-io
+
+      # --- Périphériques Razer, volants de course & matériel exotique ---
+      - kmod-openrazer
+      - kmod-hid-fanatecff
+      - hid-fanatecff-akmod-modules
+      - kmod-hid-tmff2
+      - hid-tmff2-akmod-modules
+      - kmod-t150-driver
+      - kmod-new-lg4ff
+      - new-lg4ff-akmod-modules
+      - oversteer-udev
+      - kmod-evdi
+      - libevdi
+      - kmod-wl
+      - broadcom-wl
+      - b43-fwcutter
+      - b43-openfwwf
+      - kmod-gcadapter_oc
+      - gcadapter_oc
+      - kmod-kvmfr
+      - kvmfr
+
+      # --- Contrôleurs exotiques et TV HDMI-CEC non requis ---
+      - xwiimote-ng
+      - ds-inhibit
+      - linux-cec
+      - inputattach-cec-units
+      - libcec
+
+      # --- Accessibilité, Braille & Synthèse vocale ---
+      - brltty
+      - brlapi
+      - orca
+      - espeak-ng
+      - speech-dispatcher
+      - speech-dispatcher-espeak-ng
+
+      # --- Méthodes de saisie asiatiques (IBus) ---
+      - ibus-anthy
+      - ibus-anthy-python
+      - anthy-unicode
+      - kasumi-unicode
+      - ibus-chewing
+      - ibus-hangul
+      - ibus-libpinyin
+      - ibus-m17n
+
+      # --- Capteur biométrique (Inutile sur tour de bureau) ---
+      - fprintd
+      - fprintd-pam
 
       # --- Outils serveurs web Cockpit (inutiles sur PC gamer de bureau) ---
       - cockpit-bridge
@@ -41,13 +131,6 @@ modules:
       - cockpit-selinux
       - cockpit-files
       - cockpit-storaged
-
-      # --- Contrôleurs exotiques et TV HDMI-CEC non requis ---
-      - xwiimote-ng
-      - ds-inhibit
-      - linux-cec
-      - inputattach-cec-units
-      - libcec
 
       # --- Ripping multimédia (libbluray conservé car requis par gvfs/Nautilus & FFmpeg) ---
       - makemkv

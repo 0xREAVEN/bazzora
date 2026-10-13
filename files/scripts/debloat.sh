@@ -97,7 +97,7 @@ name='X-Pardus-Apps.directory'
 translate=true
 
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'btrfs-assistant.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'io.github.rfrench3.bazzite-updater.desktop']
+apps=['tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'io.github.rfrench3.bazzite-updater.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
@@ -178,6 +178,7 @@ echo "6. Neutralisation sécurisée des recettes ujust devenues obsolètes..."
 # On vide les fichiers sans les supprimer pour préserver les déclarations 'import' de /usr/share/ublue-os/justfile
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-waydroid.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-cockpit.just
+echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-beesd.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/90-bazzite-de.just
 
 echo "7. Suppression des raccourcis d'applications obsolètes ou indésirables..."
@@ -192,6 +193,11 @@ rm -f /usr/share/applications/discourse.desktop
 # Aide GNOME (Yelp)
 rm -f /usr/share/applications/org.gnome.Yelp.desktop
 rm -f /usr/share/applications/*yelp*.desktop
+
+# Outils debloatés (Btrfs Assistant, Orca autostart)
+rm -f /usr/share/applications/btrfs-assistant.desktop
+rm -f /usr/share/applications/orca.desktop
+rm -f /etc/xdg/autostart/orca-autostart.desktop
 
 # Ancien raccourci de mise à jour fait maison
 rm -f /usr/share/applications/system-update.desktop
