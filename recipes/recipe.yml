@@ -26,13 +26,10 @@ modules:
       # --- Lanceurs non désirés ---
       - lutris
 
-      # --- Démons lourds & Résidus Bazzite / KDE (Gain RAM & CPU) ---
+      # --- Démons lourds & gestionnaires de snapshots (Gain RAM & CPU) ---
       - bees
       - snapper
       - btrfs-assistant
-      - steamdeck-kde-presets-desktop
-      - krunner-bazaar
-      - krunner-yafti
 
       # --- Microcodes & Pilotes Intel / Nvidia (Machine 100% AMD) ---
       - nvidia-gpu-firmware
