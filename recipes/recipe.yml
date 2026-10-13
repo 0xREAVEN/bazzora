@@ -1,0 +1,129 @@
+name: bazzora
+description: Image Bazzite-GNOME debloatée et optimisée pour PC Gaming Full AMD.
+base-image: ghcr.io/ublue-os/bazzite-gnome
+image-version: latest
+
+modules:
+  # 1. Copie des configurations et fichiers personnalisés (/etc, /usr, environment.d, etc.)
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # 2. Suppression des paquets inutiles (spécifique PC Full AMD & suppression bloat)
+  - type: rpm-ostree
+    repos:
+      - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-%OS_VERSION%/atim-starship-fedora-%OS_VERSION%.repo
+    install:
+      - starship
+      - topgrade
+    remove:
+      # --- Émulation Android & Waydroid ---
+      - waydroid
+      - waydroid-selinux
+      - libgbinder
+      - python3-gbinder
+
+      # --- Lanceurs non désirés ---
+      - lutris
+
+      # --- Matériel non AMD & Spécificités laptop/APU mobile non requises ---
+      - intel-opencl
+      - framework-system
+      - fw-ectool
+      - fw-fanctrl
+      - ryzenadj
+
+      # --- Outils serveurs web Cockpit (inutiles sur PC gamer de bureau) ---
+      - cockpit-bridge
+      - cockpit-system
+      - cockpit-podman
+      - cockpit-networkmanager
+      - cockpit-selinux
+      - cockpit-files
+      - cockpit-storaged
+
+      # --- Contrôleurs exotiques et TV HDMI-CEC non requis ---
+      - xwiimote-ng
+      - ds-inhibit
+      - linux-cec
+      - inputattach-cec-units
+      - libcec
+
+      # --- Ripping multimédia (libbluray conservé car requis par gvfs/Nautilus & FFmpeg) ---
+      - makemkv
+
+      # --- Intégrations Steam Deck, Yafti et presets GNOME superflus ---
+      - steamdeck-gnome-presets
+      - steamdeck-backgrounds
+      - gnome-search-yafti
+      - gnome-rounded-blur
+      - bazzite-portal
+      - jupiter-sd-mounting-btrfs
+
+      # --- Réalité Virtuelle (VR) & Capture de streaming (openxr-libs conservé pour qt6) ---
+      - openxr
+      - obs-studio-plugin-vkcapture-hook-libs
+
+      # --- Applications & Utilitaires superflus ---
+      - cardwire
+      - cardwire-gui
+      - webapp-manager
+      - cage
+      - gmodpatchtool
+
+  # 3. Exécution du script de debloat complet GNOME & wallpapers
+  - type: script
+    scripts:
+      - debloat.sh
+
+  # 4. Polices Nerd Fonts pour le terminal et les invites de commande
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - FiraCode
+        - JetBrainsMono
+        - Hack
+
+  # 5. Flatpaks par défaut (écosystème épuré avec ExtensionManager & LACT pour GPU AMD)
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        install:
+          # --- Applications GNOME de base ---
+          - org.gnome.Calculator
+          - org.gnome.Calendar
+          - org.gnome.Characters
+          - org.gnome.clocks
+          - org.gnome.Logs
+          - org.gnome.Maps
+          - org.gnome.Weather
+          - org.gnome.baobab
+          - org.gnome.Papers
+          - org.gnome.NautilusPreviewer
+          - org.gnome.font-viewer
+          - org.gnome.Showtime
+          - org.gnome.TextEditor
+          - org.gnome.Loupe
+          - org.gnome.SimpleScan
+          # --- Outils système & utilitaires ---
+          - io.missioncenter.MissionCenter
+          - page.tesk.Refine
+          - it.mijorus.gearlever
+          - io.github.flattool.Warehouse
+          - com.mattjakeman.ExtensionManager
+          - com.github.tchx84.Flatseal
+          - io.github.ilya_zlobintsev.LACT # Panneau de contrôle, undervolt & courbes ventilateurs AMD
+          # --- Navigateur ---
+          - org.mozilla.firefox
+          # --- Gaming & Lanceurs ---
+          - com.heroicgameslauncher.hgl
+          - io.github.Faugus.faugus-launcher
+          - com.vysp3r.ProtonPlus
+          - io.github.benjamimgois.goverlay
+
+  # 6. Intégration des commandes ujust personnalisées (60-bazzora.just)
+  - type: justfiles
+
+  # 7. Signature de l'image
+  - type: signing
