@@ -1,9 +1,10 @@
 [Desktop Entry]
 Type=Application
 Name=System Update
-Name[fr]=Mises à jour
-Comment=Update Fedora, Flatpaks
+Name[fr]=Mises à jour système
+Comment=Update system, Flatpaks, containers and brew
+Comment[fr]=Mettre à jour le système, les Flatpaks et les conteneurs
 Icon=/usr/share/ublue-os/icons/update.svg
-Categories=ConsoleOnly;System;
+Categories=System;Utility;
 Terminal=true
-Exec=/usr/bin/topgrade
+Exec=ujust update
