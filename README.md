@@ -81,16 +81,25 @@ ujust manage-vscode install
 
 ---
 
-## 🚀 Installation & Migration (Rebase)
+## 🚀 Installation & Déploiement
 
-Pour migrer une installation existante (Bazzite ou Fedora Silverblue) vers Bazzora :
+### Option A — Installation neuve via l'ISO Bazzora (Clé USB)
+Idéal pour une installation propre sur une nouvelle machine ou un disque dédié :
+1. **Téléchargez** l'image ISO (`bazzora-latest.iso`) depuis les [Releases](https://github.com/0xREAVEN/bazzora/releases) de ce dépôt.
+2. **Flashez** l'image sur une clé USB à l'aide de [Ventoy](https://www.ventoy.net/) (il suffit de copier-coller le fichier `.iso` sur la clé) ou de [BalenaEtcher](https://etcher.balena.io/).
+3. **Démarrez** votre PC sur la clé USB et suivez les instructions de l'installateur graphique pour installer Bazzora.
+
+---
+
+### Option B — Migration par Rebase (depuis Bazzite ou Fedora Silverblue)
+Pour convertir une installation existante sans réinstaller :
 
 #### 1. Rebase vers l'image non signée initiale
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/0xreaven/bazzora:latest
 ```
 
-### 2. Redémarrer
+#### 2. Redémarrer
 ```bash
 systemctl reboot
 ```
