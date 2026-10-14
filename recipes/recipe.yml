@@ -138,7 +138,6 @@ modules:
       - steamdeck-backgrounds
       - gnome-search-yafti
       - gnome-rounded-blur
-      - bazzite-portal
       - jupiter-sd-mounting-btrfs
 
       # --- Réalité Virtuelle (VR) & Capture de streaming (openxr-libs conservé pour qt6) ---
