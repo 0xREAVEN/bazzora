@@ -49,3 +49,50 @@ jobs:
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
           if-no-files-found: error
           retention-days: 7
+
+      - name: Split ISO for GitHub Releases (Bypass 2GB Limit)
+        run: |
+          cd "${{ steps.build.outputs.iso_path }}"
+          echo "=== Découpage de l'ISO en morceaux de 1900 Mo pour respecter la limite GitHub de 2 Go ==="
+          split -b 1900M --numeric-suffixes=1 -a 2 "${{ steps.build.outputs.iso_name }}" "${{ steps.build.outputs.iso_name }}.part"
+          echo "=== Fichiers prêts pour la Release ==="
+          ls -lh "${{ steps.build.outputs.iso_name }}"*
+
+      - name: Publish ISO to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Bazzora Installer ISO (Latest)"
+          draft: false
+          prerelease: false
+          body: |
+            ## 🚀 Bazzora Installer ISO (Dernière version)
+
+            Image ISO amorçable prête à l'emploi pour **Bazzora** (PC Desktop Gaming Full AMD).
+
+            ### 📦 Assembler l'ISO après téléchargement (Recombine Split Parts)
+            En raison de la limite stricte de **2 Go par fichier** imposée par GitHub, l'image est découpée en parties de 1,9 Go.
+            Téléchargez l'ensemble des fichiers (`.part01`, `.part02`, `.part03`, etc.) ainsi que le fichier `.CHECKSUM` dans le même dossier, puis exécutez la commande correspondante :
+
+            * **Linux / macOS (Terminal) :**
+              ```bash
+              cat bazzora-latest.iso.part* > bazzora-latest.iso
+              sha256sum -c bazzora-latest.iso-CHECKSUM
+              ```
+
+            * **Windows (Invite de commandes CMD) :**
+              ```cmd
+              copy /b bazzora-latest.iso.part* bazzora-latest.iso
+              ```
+
+            * **Windows (PowerShell) :**
+              ```powershell
+              cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso
+              Get-FileHash bazzora-latest.iso -Algorithm SHA256
+              ```
+
+            ### 💿 Flash sur clé USB
+            Flashez ensuite le fichier `bazzora-latest.iso` reconstitué sur une clé USB avec [Ventoy](https://www.ventoy.net/) ou [BalenaEtcher](https://etcher.balena.io/).
+          files: |
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}.part*
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM

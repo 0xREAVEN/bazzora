@@ -141,9 +141,12 @@ ujust manage-vscode install
 ### Option A — Clean Install via Bazzora ISO (USB Drive)
 *Recommended for a fresh, optimal bare-metal installation:*
 
-1. **Download** the ISO image (`bazzora-latest.iso`) from the [Releases](https://github.com/0xREAVEN/bazzora/releases) page of this repository.
-2. **Flash** the ISO to a USB drive using [Ventoy](https://www.ventoy.net/) (simply copy the `.iso` onto the drive) or [BalenaEtcher](https://etcher.balena.io/).
-3. **Boot** your computer from the USB drive and complete the graphical installer.
+1. **Download** the ISO parts (`bazzora-latest.iso.part*`) and `.CHECKSUM` from the [Releases](https://github.com/0xREAVEN/bazzora/releases) page of this repository.
+2. **Recombine** the ISO in your download directory:
+   * **Linux / macOS:** `cat bazzora-latest.iso.part* > bazzora-latest.iso`
+   * **Windows:** `cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso`
+3. **Flash** `bazzora-latest.iso` to a USB drive using [Ventoy](https://www.ventoy.net/) (simply copy the `.iso` onto the drive) or [BalenaEtcher](https://etcher.balena.io/).
+4. **Boot** your computer from the USB drive and complete the graphical installer.
 
 ---
 
