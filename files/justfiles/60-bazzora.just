@@ -63,8 +63,11 @@ restore-skel:
                 gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ use-custom-command true 2>/dev/null || true
                 gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ custom-command "$FISH_PATH" 2>/dev/null || true
             fi
+            echo "🎨 Application des thèmes Bazzora (Bibata Modern Ice & Papirus-Dark)..."
+            gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
+            gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
         fi
-        echo -e "🎉 \033[32mFish et Starship sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
+        echo -e "🎉 \033[32mFish, Starship et les thèmes sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
     fi
 
 # Activer ou désactiver l'installation automatique des Flatpaks au démarrage (pour éviter le spam de notifications). Options: status | enable | disable
@@ -136,6 +139,10 @@ toggle-flatpak-setup ACTION="":
 clean-bazzora:
     #!/usr/bin/bash
     set -euo pipefail
+    if flatpak list --app 2>/dev/null | grep -q "io.github.ilya_zlobintsev.LACT"; then
+        echo "🗑️ Suppression de la version Flatpak de LACT (remplacée par le RPM natif)..."
+        flatpak uninstall -y io.github.ilya_zlobintsev.LACT 2>/dev/null || true
+    fi
     echo "🧹 Suppression des runtimes Flatpak inutilisés..."
     flatpak uninstall --unused -y
     if command -v brew >/dev/null 2>&1; then

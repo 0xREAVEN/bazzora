@@ -18,6 +18,9 @@ if [ -n "$PS1" ] && [ -t 0 ]; then
                 gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ use-custom-command true 2>/dev/null || true
                 gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ custom-command '/usr/bin/fish' 2>/dev/null || true
             fi
+            # Application automatique du curseur Bibata et du thème Papirus
+            gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
+            gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
         fi
         
         # Marqueur pour ne plus jamais réexécuter ce script

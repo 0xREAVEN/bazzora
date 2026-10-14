@@ -33,11 +33,28 @@ cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-02-bazzora-folders.gschema.overri
 folder-children=['Games', 'GamingUtilities', 'Utilities', 'Containers', 'Wine', 'YaST', 'Pardus']
 EOF
 
+# Installation et configuration du thème de curseur Bibata Modern Ice
+echo "Configuration du thème de curseur Bibata Modern Ice..."
+mkdir -p /usr/share/icons/default
+curl -fSsL --retry 3 "https://github.com/ful1e5/Bibata_Cursor/releases/latest/download/Bibata-Modern-Ice.tar.xz" | tar -xJ -C /usr/share/icons/ 2>/dev/null || true
+chmod -R 755 /usr/share/icons/Bibata-Modern-Ice 2>/dev/null || true
+
+cat << 'EOF' > /usr/share/icons/default/index.theme
+[Icon Theme]
+Name=Default
+Comment=Default Cursor Theme
+Inherits=Bibata-Modern-Ice
+EOF
+chmod 644 /usr/share/icons/default/index.theme
+
 # Création de l'override de thème et d'optimisations Mutter Gaming Bazzora
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-04-bazzora-theme.gschema.override
 [org.gnome.desktop.interface]
 color-scheme='prefer-dark'
 gtk-theme='adw-gtk3-dark'
+icon-theme='Papirus-Dark'
+cursor-theme='Bibata-Modern-Ice'
+cursor-size=24
 enable-hot-corners=false
 document-font-name='Noto Sans 11'
 font-name='Noto Sans 11'
@@ -113,7 +130,7 @@ name='X-Pardus-Apps.directory'
 translate=true
 
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['system-update.desktop', 'tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
+apps=['system-update.desktop', 'tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'gparted.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
@@ -203,5 +220,8 @@ rm -f /usr/share/applications/btrfs-assistant.desktop
 rm -f /usr/share/applications/orca.desktop
 rm -f /etc/xdg/autostart/orca-autostart.desktop
 rm -f /usr/share/applications/io.github.rfrench3.bazzite-updater.desktop
+
+echo "8. Configuration des services système..."
+systemctl enable lactd.service 2>/dev/null || true
 
 echo "=== Debloat Bazzora terminé avec succès ==="

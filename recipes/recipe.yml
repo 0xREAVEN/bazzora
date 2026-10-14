@@ -10,12 +10,16 @@ modules:
       - source: system
         destination: /
 
-  # 2. Suppression des paquets inutiles (spécifique PC Full AMD & suppression bloat)
+  # 2. Gestion des paquets RPM (Ajout de Starship, LACT, GParted, Papirus et suppression bloat)
   - type: rpm-ostree
     repos:
       - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-%OS_VERSION%/atim-starship-fedora-%OS_VERSION%.repo
+      - https://copr.fedorainfracloud.org/coprs/ilyaz/LACT/repo/fedora-%OS_VERSION%/ilyaz-LACT-fedora-%OS_VERSION%.repo
     install:
       - starship
+      - lact
+      - gparted
+      - papirus-icon-theme
     remove:
       # --- Émulation Android & Waydroid ---
       - waydroid
@@ -159,12 +163,18 @@ modules:
       - yelp
       - bazzite-updater
 
-  # 3. Exécution du script de debloat complet GNOME & wallpapers
+  # 3. Activation du service démon LACT natif
+  - type: systemd
+    system:
+      enabled:
+        - lactd.service
+
+  # 4. Exécution du script de debloat complet GNOME & wallpapers
   - type: script
     scripts:
       - debloat.sh
 
-  # 4. Polices Nerd Fonts pour le terminal et les invites de commande
+  # 5. Polices Nerd Fonts pour le terminal et les invites de commande
   - type: fonts
     fonts:
       nerd-fonts:
@@ -172,7 +182,7 @@ modules:
         - JetBrainsMono
         - Hack
 
-  # 5. Flatpaks par défaut (écosystème épuré avec ExtensionManager & LACT pour GPU AMD)
+  # 6. Flatpaks par défaut (écosystème épuré)
   - type: default-flatpaks
     configurations:
       - scope: system
@@ -201,7 +211,6 @@ modules:
           - io.github.flattool.Warehouse
           - com.mattjakeman.ExtensionManager
           - com.github.tchx84.Flatseal
-          - io.github.ilya_zlobintsev.LACT # Panneau de contrôle, undervolt & courbes ventilateurs AMD
           # --- Navigateur ---
           - org.mozilla.firefox
           # --- Gaming & Lanceurs ---
@@ -210,8 +219,8 @@ modules:
           - com.vysp3r.ProtonPlus
           - io.github.benjamimgois.goverlay
 
-  # 6. Intégration des commandes ujust personnalisées (60-bazzora.just)
+  # 7. Intégration des commandes ujust personnalisées (60-bazzora.just)
   - type: justfiles
 
-  # 7. Signature de l'image
+  # 8. Signature de l'image
   - type: signing
