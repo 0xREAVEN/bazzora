@@ -1,4 +1,14 @@
+<div align="center">
+
 # Bazzora 🚀
+
+**Custom, immutable, and debloated atomic operating system optimized for Full AMD Desktop Gaming.**
+
+[🇬🇧 English](README.md) • [🇫🇷 Français](README.fr.md)
+
+[![Français](https://img.shields.io/badge/🇫🇷_Passer_au_Français-Lire_le_README-blue?style=for-the-badge)](README.fr.md)
+
+<br/>
 
 [![BlueBuild Build](https://github.com/0xREAVEN/bazzora/actions/workflows/build.yml/badge.svg)](https://github.com/0xREAVEN/bazzora/actions/workflows/build.yml)
 ![Base Image](https://img.shields.io/badge/Base-Bazzite--GNOME-purple?logo=linux)
@@ -6,152 +16,200 @@
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 ![Framework](https://img.shields.io/badge/Built%20with-BlueBuild-cyan)
 
-**Bazzora** est une image de système d'exploitation OCI personnalisée, immuable et prête pour la production, basée sur **Fedora Atomic / Bazzite-GNOME**.
-
-Elle combine le **noyau optimisé pour le jeu et les pilotes Mesa de Valve** issus de Bazzite avec la **sobriété et la pureté de Fedora Silverblue Vanilla**, le tout taillé sur mesure pour les machines de bureau **Full AMD** (processeurs AMD Ryzen + cartes graphiques AMD Radeon).
+</div>
 
 ---
 
-## ⚖️ Pourquoi Bazzora ? (Comparatif)
+**Bazzora** is an immutable, atomic OCI container operating system based on **Fedora Atomic / Bazzite-GNOME**, tailored specifically for high-performance **Full AMD** gaming desktops (AMD Ryzen CPU + AMD Radeon GPU).
 
-| Fonctionnalité | Fedora Silverblue | Bazzite standard | **Bazzora** |
+It bridges the gap between the **hardcore gaming optimizations of Valve/Bazzite** (gaming kernel, Mesa ACO drivers, proton-ge, FSR 4 readiness) and the **rock-solid sobriety of vanilla Fedora Silverblue** — completely stripping away mobile console daemons, unneeded hypervisor modules, Android subsystems, and desktop bloatware.
+
+---
+
+## ⚖️ Why Bazzora? (Comparison)
+
+| Feature | Vanilla Silverblue | Default Bazzite | **Bazzora** |
 | :--- | :---: | :---: | :---: |
-| **Noyau Gaming (`kernel-fsync` / CachyOS)** | ❌ (Noyau générique) | ✅ | ✅ **Oui** |
-| **Pilotes Mesa Valve (RADV ACO / 32-bit & 64-bit)** | ❌ (Mesa Fedora standard) | ✅ | ✅ **Oui** |
-| **Environnement GNOME épuré & fluide** | ✅ (Vanilla) | ❌ (Surchargé d'effets visuels) | ✅ **Vanilla épuré** |
-| **Cache Shaders Mesa XXL (50 Go anti-stuttering)** | ❌ | ❌ | ✅ **Oui** |
-| **Support Proton AGS & FSR 4 en un clic** | ❌ | ⚠️ (Partiel) | ✅ **Oui (`ujust`)** |
-| **Déblocage Overdrive AMD GPU (LACT / OC)** | ❌ (Manuel) | ❌ (Manuel) | ✅ **Oui (`ujust`)** |
-| **Émulation Android & Waydroid** | ❌ | ⚠️ (Inclus par défaut) | 🚫 **Purgé** |
-| **Démons pour consoles portables (Steam Deck / Ally)** | ❌ | ⚠️ (Inclus par défaut) | 🚫 **Purgé** |
-| **Serveur web d'administration (Cockpit)** | ❌ | ⚠️ (Inclus par défaut) | 🚫 **Purgé** |
+| **Gaming Kernel (`kernel-fsync` / CachyOS)** | ❌ (Stock generic) | ✅ | ✅ **Yes** |
+| **Valve Mesa Drivers (RADV ACO / 32 & 64-bit)** | ❌ (Stock Fedora) | ✅ | ✅ **Yes** |
+| **Mesa XXL Shader Cache (50 GB anti-stutter)** | ❌ (Default 1 GB) | ❌ (Default 1 GB) | ✅ **Yes (50 GB)** |
+| **Proton Wayland & Native HDR (Mutter Direct)** | ❌ | ⚠️ (Gamescope only) | ✅ **Yes (`ujust`)** |
+| **Proton NTSYNC Kernel Fastpath** | ❌ | ⚠️ (Manual) | ✅ **Enabled by default** |
+| **AMD GPU Overdrive & LACT (Undervolt/Fans)** | ❌ | ⚠️ (Flatpak, manual sudo) | ✅ **Native RPM + `lactd` daemon** |
+| **Disk Partitioning Suite** | ❌ (Disks only) | ❌ (Disks only) | ✅ **GParted (Native RPM)** |
+| **Low-Latency Audio (PipeWire 256 quantum)** | ❌ (1024 default) | ❌ (1024 default) | ✅ **Yes (< 5.8 ms)** |
+| **CachyOS / SteamOS Sysctl Tuning (ZRAM, BBR)** | ❌ | ⚠️ (Partial) | ✅ **Full Gaming Profile** |
+| **Mutter Low-Latency (No timeout freeze, VRR)** | ❌ | ❌ | ✅ **Yes (`check-alive=0`)** |
+| **Clean Vanilla Desktop (Zero bloatware extensions)**| ✅ | ❌ (Compiz effects / Docks) | ✅ **Pure GNOME** |
+| **Default Aesthetics (Bibata Ice & Papirus-Dark)** | ❌ (Adwaita) | ❌ (Adwaita) | ✅ **Bibata Modern Ice + Papirus** |
+| **Android / Waydroid Subsystem** | ❌ | ⚠️ (Bundled) | 🚫 **Completely purged** |
+| **Handheld / Console Daemons (Steam Deck/Ally)** | ❌ | ⚠️ (Bundled) | 🚫 **Completely purged** |
+| **Server Administration Stack (Cockpit)** | ❌ | ⚠️ (Bundled) | 🚫 **Completely purged** |
 
 ---
 
-## ⚡ Points Forts & Optimisations
+## ⚡ Core Features & Optimizations
 
-### 🎮 Stack Gaming Full AMD
-* **Pilote Vulkan RADV (Mesa ACO)** : Pilote graphique optimisé par Valve avec ordonnancement shader ACO.
-* **Cache Shader XXL (50 Go)** : [10-amd-gaming.conf](files/system/etc/environment.d/10-amd-gaming.conf) configure `MESA_SHADER_CACHE_MAX_SIZE=50G` pour éliminer les micro-saccades (stuttering) dues à la recompilation fréquente des shaders.
-* **Support AMD GPU Services (AGS)** : Activé sous Proton (`PROTON_ENABLE_AMD_AGS=1`) pour exploiter nativement le FidelityFX et le FSR dans les titres compatibles.
-* **Overdrive GPU en un clic** : Commande `ujust toggle-amdgpu-overdrive` pour activer `amdgpu.ppfeaturemask=0xffffffff` et libérer les fréquences, tensions (undervolt) et courbes de ventilation personnalisées dans **LACT**.
+### 🎮 Full AMD High-Performance Gaming Stack
+* **Valve RADV Vulkan with ACO Compiler** : High-efficiency shader compilation eliminating frame dips.
+* **XXL Mesa Shader Cache (50 GB)** : Preconfigured via [10-amd-gaming.conf](files/system/etc/environment.d/10-amd-gaming.conf) (`MESA_SHADER_CACHE_MAX_SIZE=50G`) to avoid in-game shader recompilation stutter.
+* **Proton NTSYNC Fastpath** : `PROTON_USE_NTSYNC=1` enabled out of the box for ultra-low overhead Windows NT synchronization.
+* **AMD GPU Services (AGS) & FSR 4 Ready** : `PROTON_ENABLE_AMD_AGS=1` enabled for native FidelityFX features, with instant global FSR 4 forcing via `ujust toggle-fsr4`.
+* **Proton Wayland & Native HDR** : Command `ujust toggle-proton-hdr` enables native Wayland rendering and direct Mutter HDR passthrough without the compositing overhead or color banding of nested Gamescope.
+* **LACT Native RPM + Auto-Started `lactd` Daemon** : AMD GPU control panel (overclocking, undervolting, custom fan curves) packaged natively via official COPR. The `lactd.service` runs as a system daemon on boot, enabling immediate hardware control without requiring root passwords.
+* **One-Click AMD Overdrive** : `ujust toggle-amdgpu-overdrive` activates `amdgpu.ppfeaturemask=0xffffffff` at the kernel level.
 
-### 🖥️ Bureau GNOME Vanilla & Performance
-* **Zéro extension bloatware** : Purge intégrale des extensions préinstallées (*compiz-windows-effect*, *magic-lamp*, *logomenu*, *hotedge*, etc.).
-* **Schémas dconf & glib propres** : Recompilation propre des schémas dconf sans résidus orphelins.
-* **Gestionnaire d'extensions dédié** : **ExtensionManager** est préinstallé en Flatpak pour vous laisser le choix exclusif de vos extensions utilisateur.
-* **Raccourcis productivité** : `Ctrl+Alt+T` pour ouvrir le terminal Ptyxis et `Ctrl+Shift+Esc` pour lancer Mission Center.
+### ⚙️ Kernel & System Tuning (CachyOS & SteamOS Standards)
+* **Gaming Memory & Swappiness Profile** ([99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf)):
+  * `vm.max_map_count = 2147483642` : Prevents memory crashes in modern heavy games (Star Citizen, Hogwarts Legacy, DayZ, modded Skyrim).
+  * `vm.swappiness = 180` with ZRAM zstd compression for responsive memory reclamation under extreme load.
+  * `dirty_bytes` limits (256 MB dirty / 128 MB background) preventing bursty write stalls during high I/O spikes.
+  * `bbr` + `fq` network pacing for lower jitter and ping stability in multiplayer games.
+* **Transparent Hugepages (THP) Deferral** ([bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf)):
+  * Set to `defer+madvise` to prevent memory allocation latency spikes and micro-freezes.
+* **Ultra-Low Latency Audio** ([10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf)):
+  * PipeWire forced to `min-quantum = 256` for deterministic < 5.8 ms audio latency with zero crackling or dropouts.
+* **Hardware Watchdog Blacklist** ([bazzora-blacklist.conf](files/system/etc/modprobe.d/bazzora-blacklist.conf)):
+  * Blacklists `sp5100_tco` on Ryzen desktop motherboards to avoid spurious hardware timeouts and random lockups.
 
-### 🧹 Debloat Chirurgical
-* **Android / Waydroid** : Suppression complète de Waydroid et des bibliothèques Binder (`libgbinder`, `python3-gbinder`).
-* **Services Serveur Cockpit** : Désinstallation des 6 paquets Cockpit et arrêt des sockets réseau d'administration web inutiles.
-* **Consoles portables & Laptops** : Suppression des démons handhelds (`hhd`, `inputplumber`), outils Framework (`fw-ectool`, `fw-fanctrl`) et outils mobiles APU (`ryzenadj`).
-* **Périphériques superflus** : Suppression des pilotes Wiimote Nintendo (`xwiimote-ng`) et du protocole TV HDMI-CEC (`libcec`, `linux-cec`).
+### 🖥️ Clean GNOME Environment & Modern Styling
+* **Mutter Gaming Tweaks**:
+  * `check-alive-timeout = 0` : Completely disables the intrusive *"Application is not responding"* modal during long game loading screens.
+  * Native Variable Refresh Rate (VRR / FreeSync) and `xwayland-native-scaling` enabled by default.
+  * Flat mouse acceleration curve (`accel-profile='flat'`) for raw 1:1 precision competitive aim.
+* **Default Aesthetics**:
+  * **Cursor Theme** : **Bibata Modern Ice** installed system-wide (`/usr/share/icons/default/index.theme`, GNOME, GTK 3 & GTK 4, Flatpaks, XWayland).
+  * **Icon Theme** : **Papirus-Dark** providing clean, high-contrast monochrome system panel icons alongside colorful app icons.
+  * **GTK Theme** : Dark mode by default (`adw-gtk3-dark` + `color-scheme='prefer-dark'`).
+* **Clean Productivity**:
+  * Pre-packaged **GParted** for advanced drive management.
+  * **ExtensionManager** installed in Flatpak to manage user extensions safely.
+  * Useful shortcuts: `Ctrl+Alt+T` (Ptyxis terminal) and `Ctrl+Shift+Esc` (Mission Center).
+  * Purged KDE-based updater in favor of the lightweight, yellow-icon `ujust update` desktop launcher.
 
-### 🐚 Terminal & Environnement Shell
-* **Fish Shell préconfiguré** : Chargement automatique de Starship, historique optimisé et désactivation du message d'accueil d'origine.
-* **Prompt Starship complet** : Thème personnalisé avec symboles Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`).
-* **Fastfetch** : Configuration élégante affichant les détails matériels complets (CPU Ryzen, GPU Radeon, pilotes).
+### 🧹 Surgical Debloat (Stripped Down for Pure Desktop)
+* **Android / Waydroid** : Completely purged along with binder libraries (`waydroid`, `libgbinder`, `python3-gbinder`).
+* **Server Administration** : Purged Cockpit web services and administrative sockets.
+* **Handhelds & Laptops** : Purged Steam Deck / ROG Ally / Legion Go daemons (`hhd`, `inputplumber`), Framework laptop modules (`fw-fanctrl`), and mobile APU tools (`ryzenadj`).
+* **Heavy Daemons** : Purged resource-heavy snapshot schedulers (`bees`, `snapper`, `btrfs-assistant`) for instant RAM and CPU savings.
+* **Extraneous Hardware** : Purged non-AMD GPU drivers (Intel/Nvidia firmwares and media drivers), virtual machine guest agents (QEMU, VMware, VirtualBox, Hyper-V, Spice), and unneeded racing wheel modules.
+
+### 🐚 Shell & Terminal Experience
+* **Fish Shell & Starship Prompt** : Configured out-of-the-box with Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`) and clean aliases.
+* **Fastfetch** : Custom layout highlighting your Ryzen CPU and Radeon GPU status.
+* **Seamless First Run** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Automatically sets up Ptyxis terminal profile for Fish on initial launch without blocking `chsh`.
 
 ---
 
-## 🛠️ Boîte à Outils `ujust` (Commandes Pratiques)
+## 🛠️ `ujust` Toolkit (Quick Reference)
 
-Bazzora inclut des commandes interactives prêtes à l'emploi :
+Bazzora features dedicated, interactive maintenance recipes:
 
 ```bash
-# Débloquer l'overdrive AMD (fréquences, undervolt, ventilation LACT)
+# Unlock AMD GPU Overdrive (frequencies, undervolt, fan curves in LACT)
 ujust toggle-amdgpu-overdrive
 
-# Forcer l'upgrade FSR 4 sur les jeux compatibles (RDNA 3/4)
+# Toggle native Proton Wayland & HDR (or inspect monitor HDR EDID peak nits)
+ujust toggle-proton-hdr
+
+# Force global FSR 4 upgrade for supported RDNA 3/4 titles
 ujust toggle-fsr4
 
-# Mettre à jour tout le système (OSTree, Flatpaks, conteneurs et brew en parallèle)
+# Full system update (parallel OSTree, Flatpaks, containers, and brew)
 ujust update
 
-# Restaurer les configurations utilisateur (/etc/skel vers $HOME)
+# Toggle automated Flatpak installation on boot (silences notification popups)
+ujust toggle-flatpak-setup
+
+# Clean unused Flatpaks, Homebrew caches, and rpm-ostree metadata
+ujust clean-bazzora
+
+# Restore user configuration files from /etc/skel to $HOME
 ujust restore-skel
 
-# Configurer le pare-feu pour la liaison smartphone GSConnect
+# Configure firewall ports for GSConnect smartphone pairing
 ujust setup-gsconnect
 
-# Installer ou gérer Visual Studio Code via Homebrew
+# Install or manage Visual Studio Code via Homebrew
 ujust manage-vscode install
 ```
 
 ---
 
-## 🚀 Installation & Déploiement
+## 🚀 Installation & Deployment
 
-### Option A — Installation neuve via l'ISO Bazzora (Clé USB)
-Idéal pour une installation propre sur une nouvelle machine ou un disque dédié :
-1. **Téléchargez** l'image ISO (`bazzora-latest.iso`) depuis les [Releases](https://github.com/0xREAVEN/bazzora/releases) de ce dépôt.
-2. **Flashez** l'image sur une clé USB à l'aide de [Ventoy](https://www.ventoy.net/) (il suffit de copier-coller le fichier `.iso` sur la clé) ou de [BalenaEtcher](https://etcher.balena.io/).
-3. **Démarrez** votre PC sur la clé USB et suivez les instructions de l'installateur graphique pour installer Bazzora.
+### Option A — Clean Install via Bazzora ISO (USB Drive)
+*Recommended for a fresh, optimal bare-metal installation:*
+
+1. **Download** the ISO image (`bazzora-latest.iso`) from the [Releases](https://github.com/0xREAVEN/bazzora/releases) page of this repository.
+2. **Flash** the ISO to a USB drive using [Ventoy](https://www.ventoy.net/) (simply copy the `.iso` onto the drive) or [BalenaEtcher](https://etcher.balena.io/).
+3. **Boot** your computer from the USB drive and complete the graphical installer.
 
 ---
 
-### Option B — Migration par Rebase (depuis Bazzite ou Fedora Silverblue)
-Pour convertir une installation existante sans réinstaller :
+### Option B — Rebase from Bazzite or Fedora Silverblue
+*To convert an existing atomic installation without formatting your drive:*
 
-#### 1. Rebase vers l'image non signée initiale
+#### 1. Rebase to the initial unverified image
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/0xreaven/bazzora:latest
 ```
 
-#### 2. Redémarrer
+#### 2. Reboot
 ```bash
 systemctl reboot
 ```
 
-### 3. Première initialisation de votre environnement (Post-Rebase)
+#### 3. Initialize your user environment
 > [!NOTE]
-> Sur une **nouvelle installation propre (ISO)**, votre compte est automatiquement créé avec Fish, Starship et Fastfetch par défaut.
-> Si vous venez d'effectuer une migration par **rebase**, le système ne modifie pas votre dossier personnel existant. Exécutez simplement cette commande pour déployer vos configurations Bazzora et configurer le terminal Ptyxis :
+> On a fresh ISO install, user accounts receive all configurations automatically.
+> Following a rebase, run this one-time command to apply the Bazzora profile and Ptyxis Fish configuration:
 
 ```bash
 ujust restore-skel
 ```
-*(Choisissez `M` pour copier sans écraser ou `E` pour réinitialiser. Vos configurations Fish, Starship, Fastfetch et le profil Ptyxis sont immédiatement appliqués !)*
+*(Choose `M` to copy missing files without overwriting your personal files).*
 
-### 4. Rebase vers l'image signée (avec vérification Cosign)
+#### 4. Switch to the cryptographically signed stream (Cosign verified)
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/0xreaven/bazzora:latest
 ```
 
-### 5. Redémarrage final
+#### 5. Final Reboot
 ```bash
 systemctl reboot
 ```
 
 ---
 
-## 🛡️ Sécurité & Retour Arrière (Rollback)
+## 🛡️ Atomic Security & Rollback
 
-### Retour arrière instantané
-L'avantage de l'immuabilité rpm-ostree est que vous pouvez revenir à votre déploiement précédent à tout moment :
+### Instant System Rollback
+If any upstream update introduces an issue, roll back instantly:
 
-* **Depuis le système actif :**
+* **From the active desktop terminal:**
   ```bash
   rpm-ostree rollback
   systemctl reboot
   ```
-* **Depuis le menu de démarrage GRUB :** Sélectionnez simplement la deuxième entrée pour démarrer sur votre ancien état système.
+* **From the GRUB boot menu:** Select the previous deployment entry to boot directly into your prior working state.
 
-### Vérification de la signature d'image Cosign
-Vous pouvez vérifier l'authenticité et l'intégrité de l'image avec la clé publique fournie :
+### Image Signature Verification
+Verify image authenticity and integrity using Cosign and the public key:
 ```bash
 cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora
 ```
 
 ---
 
-## 📜 Licence & Remerciements
+## 📜 License & Credits
 
-Distribué sous licence **Apache 2.0**. Voir [LICENSE](LICENSE) pour plus de détails.
+Distributed under the **Apache 2.0** license. See [LICENSE](LICENSE) for details.
 
-Remerciements aux projets qui rendent cette image possible :
+Special thanks to the open-source projects empowering Bazzora:
 * [Fedora Silverblue](https://fedoraproject.org/silverblue/) & [Universal Blue](https://universal-blue.org/)
-* [Bazzite](https://bazzite.gg/) pour le noyau gaming et la stack Mesa
-* [BlueBuild](https://blue-build.org/) pour le moteur de construction déclaratif
-* [CachyOS](https://cachyos.org/) pour les patches noyau et ordonnanceurs
+* [Bazzite](https://bazzite.gg/) for the upstream gaming kernel and Mesa ACO stack
+* [BlueBuild](https://blue-build.org/) for declarative containerized OS image builds
+* [CachyOS](https://cachyos.org/) for kernel schedulers and gaming sysctl guidelines
+* [LACT](https://github.com/ilya-zlobintsev/LACT) for the Linux AMDGPU control and monitoring suite
+* [Bibata Cursor](https://github.com/ful1e5/Bibata_Cursor) & [Papirus Development Team](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) for the desktop styling
