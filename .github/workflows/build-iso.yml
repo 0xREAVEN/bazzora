@@ -59,7 +59,7 @@ jobs:
           ls -lh "${{ steps.build.outputs.iso_name }}"*
 
       - name: Publish ISO to GitHub Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: "Bazzora Installer ISO (Latest)"
