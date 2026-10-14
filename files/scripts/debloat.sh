@@ -47,6 +47,20 @@ Inherits=Bibata-Modern-Ice
 EOF
 chmod 644 /usr/share/icons/default/index.theme
 
+# Configuration de l'accès aux thèmes d'icônes et curseurs pour Flatpak
+echo "Configuration de l'accès aux icônes et curseurs pour les applications Flatpak..."
+mkdir -p /var/lib/flatpak/overrides
+flatpak override --system --filesystem=/usr/share/icons:ro --env=XCURSOR_PATH=/run/host/usr/share/icons 2>/dev/null || true
+if [ ! -f "/var/lib/flatpak/overrides/global" ]; then
+    cat << 'EOF' > /var/lib/flatpak/overrides/global
+[Context]
+filesystems=/usr/share/icons:ro;
+
+[Environment]
+XCURSOR_PATH=/run/host/usr/share/icons
+EOF
+fi
+
 # Création de l'override de thème et d'optimisations Mutter Gaming Bazzora
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-04-bazzora-theme.gschema.override
 [org.gnome.desktop.interface]

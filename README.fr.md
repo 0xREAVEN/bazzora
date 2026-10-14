@@ -62,8 +62,8 @@ Elle fait le pont entre les **optimisations gaming de pointe de Valve et Bazzite
 ### ⚙️ Ajustements Noyau & Système (Inspirés de CachyOS & SteamOS)
 * **Profil Mémoire et Swappiness Gaming** ([99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf)) :
   * `vm.max_map_count = 2147483642` : Prévient les plantages mémoire sur les jeux gourmands (Star Citizen, Hogwarts Legacy, DayZ, Skyrim moddé).
-  * `vm.swappiness = 180` avec compression ZRAM zstd pour une réactivité maximale même en forte charge RAM.
-  * Limitation de l'écriture en arrière-plan (`dirty_bytes = 268435456`) pour éradiquer les blocages d'I/O disque pendant le jeu.
+  * `vm.swappiness = 100` avec compression ZRAM zstd pour une réactivité maximale sous charge.
+  * Limitation de l'écriture en arrière-plan (256 Mo dirty / 64 Mo background) pour éradiquer les blocages d'I/O disque pendant le jeu.
   * Contrôle de congestion réseau `bbr` + `fq` pour réduire le jitter et stabiliser le ping en multijoueur.
 * **Gestion des Pages Mémoire Transparentes (THP)** ([bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf)) :
   * Configuré en `defer+madvise` pour éliminer les saccades lors des allocations mémoire massives dans les jeux.

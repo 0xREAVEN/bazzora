@@ -62,8 +62,8 @@ It bridges the gap between the **hardcore gaming optimizations of Valve/Bazzite*
 ### ⚙️ Kernel & System Tuning (CachyOS & SteamOS Standards)
 * **Gaming Memory & Swappiness Profile** ([99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf)):
   * `vm.max_map_count = 2147483642` : Prevents memory crashes in modern heavy games (Star Citizen, Hogwarts Legacy, DayZ, modded Skyrim).
-  * `vm.swappiness = 180` with ZRAM zstd compression for responsive memory reclamation under extreme load.
-  * `dirty_bytes` limits (256 MB dirty / 128 MB background) preventing bursty write stalls during high I/O spikes.
+  * `vm.swappiness = 100` with ZRAM zstd compression for responsive memory reclamation under load.
+  * `dirty_bytes` limits (256 MB dirty / 64 MB background) preventing bursty write stalls during high I/O spikes.
   * `bbr` + `fq` network pacing for lower jitter and ping stability in multiplayer games.
 * **Transparent Hugepages (THP) Deferral** ([bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf)):
   * Set to `defer+madvise` to prevent memory allocation latency spikes and micro-freezes.

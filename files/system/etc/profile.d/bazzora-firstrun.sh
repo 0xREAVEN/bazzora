@@ -22,6 +22,11 @@ if [ -n "$PS1" ] && [ -t 0 ]; then
             gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
             gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
         fi
+
+        # Cohérence d'accès aux icônes et au curseur pour les Flatpaks utilisateur
+        if command -v flatpak >/dev/null 2>&1; then
+            flatpak override --user --filesystem=/usr/share/icons:ro --env=XCURSOR_PATH=/run/host/usr/share/icons 2>/dev/null || true
+        fi
         
         # Marqueur pour ne plus jamais réexécuter ce script
         touch "$HOME/.config/bazzora-initialized"
