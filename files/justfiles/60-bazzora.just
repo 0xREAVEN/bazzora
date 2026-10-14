@@ -73,10 +73,8 @@ toggle-flatpak-setup ACTION="":
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
     
-    # On cible le timer !
     SERVICE="system-flatpak-setup.timer"
     
-    # Vérifier l'état actuel du timer
     if systemctl is-enabled --quiet "$SERVICE" 2>/dev/null; then
         STATUS="Enabled"
     else
@@ -133,27 +131,78 @@ toggle-flatpak-setup ACTION="":
             ;;
     esac
 
+# Nettoie les résidus Flatpak, Homebrew et le cache rpm-ostree
+[group("system")]
+clean-bazzora:
+    #!/usr/bin/bash
+    set -euo pipefail
+    echo "🧹 Suppression des runtimes Flatpak inutilisés..."
+    flatpak uninstall --unused -y
+    if command -v brew >/dev/null 2>&1; then
+        echo "🍺 Nettoyage du cache Homebrew..."
+        brew cleanup --prune=all
+    fi
+    echo "📦 Nettoyage des métadonnées rpm-ostree..."
+    sudo rpm-ostree cleanup -bm
+    echo -e "✅ \033[32mSystème Bazzora nettoyé avec succès !\033[0m"
+
 # ==================================================
-# 🎮 GAMING
+# 🎮 GAMING & HDR
 # ==================================================
 
-# Force l'upgrade FSR 4
+# Force l'upgrade FSR 4 (RDNA 4)
+[group("gaming")]
 toggle-fsr4:
     #!/usr/bin/bash
     set -euo pipefail
     FILE="$HOME/.config/environment.d/99-proton-fsr4.conf"
-    echo -e "\033[1mGlobal FSR4 (RDNA4)\033[0m"
+    echo -e "\033[1mGlobal FSR 4 (RDNA 4)\033[0m"
     echo "Permet à Proton de forcer le FSR 4 sur les jeux compatibles (FSR 3.1+)."
     read -p "Voulez-vous (A)ctiver ou (D)ésactiver ? " choice
     case "$choice" in
         A|a)
             mkdir -p "$HOME/.config/environment.d"
             echo "PROTON_FSR4_UPGRADE=1" > "$FILE"
-            echo -e "✅ \033[32mActivé\033[0m: PROTON_FSR4_UPGRADE=1"
+            echo -e "✅ \033[32mActivé\033[0m : PROTON_FSR4_UPGRADE=1 (reconnectez votre session pour appliquer)"
             ;;
         D|d)
             rm -f "$FILE"
-            echo -e "❌ \033[31mDésactivé\033[0m: PROTON_FSR4_UPGRADE retiré"
+            echo -e "❌ \033[31mDésactivé\033[0m : PROTON_FSR4_UPGRADE retiré"
+            ;;
+        *) echo "Action annulée." ;;
+    esac
+
+# Active/Désactive le HDR et Wayland natif sous Proton (sans Gamescope) ou affiche les Nits EDID de l'écran
+[group("gaming")]
+toggle-proton-hdr:
+    #!/usr/bin/bash
+    set -euo pipefail
+    FILE="$HOME/.config/environment.d/99-proton-wayland-hdr.conf"
+    echo -e "\033[1mProton Wayland & HDR Natif (GNOME / Mutter)\033[0m"
+    echo "Active le pilote Wayland natif de Proton et le pass-through HDR direct vers Mutter."
+    echo "Astuce : Réglez la luminosité SDR du bureau via le curseur du menu rapide GNOME (40-60%)."
+    echo ""
+    read -p "Voulez-vous (A)ctiver globalement, (D)ésactiver, ou (I)nspecter les Nits HDR de l'écran ? " choice
+    case "$choice" in
+        A|a)
+            mkdir -p "$HOME/.config/environment.d"
+            printf "PROTON_ENABLE_WAYLAND=1\nPROTON_ENABLE_HDR=1\n" > "$FILE"
+            echo -e "✅ \033[32mActivé\033[0m : PROTON_ENABLE_WAYLAND=1 & PROTON_ENABLE_HDR=1"
+            echo "Reconnectez votre session GNOME (ou utilisez ces variables par jeu dans Steam)."
+            ;;
+        D|d)
+            rm -f "$FILE"
+            echo -e "❌ \033[31mDésactivé\033[0m : Configuration globale Proton Wayland/HDR retirée."
+            ;;
+        I|i)
+            echo -e "\n🔍 \033[1mMétadonnées HDR (EDID) rapportées par votre écran au noyau :\033[0m"
+            if command -v drm_info >/dev/null 2>&1; then
+                drm_info | grep -A 8 "HDR_OUTPUT_METADATA" || echo "Aucune métadonnée HDR active détectée."
+            elif command -v gdctl >/dev/null 2>&1; then
+                gdctl show || true
+            else
+                echo "Outil drm_info/gdctl non disponible."
+            fi
             ;;
         *) echo "Action annulée." ;;
     esac
@@ -186,7 +235,6 @@ toggle-amdgpu-overdrive:
             ;;
         *) echo "Aucune modification apportée." ;;
     esac
-
 
 # ==================================================
 # 🍺 HOMEBREW & BBREW
