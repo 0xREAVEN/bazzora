@@ -20,6 +20,7 @@ modules:
       - lact
       - gparted
       - papirus-icon-theme
+      - gnome-initial-setup
     remove:
       # --- Émulation Android & Waydroid ---
       - waydroid
@@ -115,16 +116,6 @@ modules:
       - espeak-ng
       - speech-dispatcher
       - speech-dispatcher-espeak-ng
-
-      # --- Méthodes de saisie asiatiques (IBus) ---
-      - ibus-anthy
-      - ibus-anthy-python
-      - anthy-unicode
-      - kasumi-unicode
-      - ibus-chewing
-      - ibus-hangul
-      - ibus-libpinyin
-      - ibus-m17n
 
       # --- Capteur biométrique (Inutile sur tour de bureau) ---
       - fprintd
