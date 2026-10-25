@@ -2,8 +2,9 @@
 # 🚀 SYSTEM & UPDATES
 # ==================================================
 
-# Mise à jour unifiée en parallèle : image système, Flatpaks, Homebrew et conteneurs Distrobox
-# (nommée bazzora-update pour ne pas entrer en conflit avec « ujust update » de Bazzite)
+# Nommée bazzora-update pour ne pas entrer en conflit avec « ujust update » de Bazzite.
+# (ujust affiche la dernière ligne de commentaire comme description)
+# Mise à jour unifiée en parallèle (système, Flatpaks, Homebrew, Distrobox) avec version de secours épinglée
 [group("system")]
 bazzora-update:
     #!/usr/bin/bash
