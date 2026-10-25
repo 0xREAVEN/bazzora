@@ -66,7 +66,7 @@ jobs:
       os_version: ${{ steps.candidate.outputs.os_version }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Libération d'espace disque
         run: |
@@ -81,10 +81,15 @@ jobs:
         run: |
           set -euo pipefail
           SHA7="${GITHUB_SHA:0:7}"
-          # Tag « <sha>-candidate-<version Fedora> », posé par BlueBuild pour ce commit
-          TAG=$(skopeo list-tags "docker://${IMAGE}" | jq -r '.Tags[]' | grep -E "^${SHA7}-candidate-[0-9]+$" | head -n1)
+          if ! TAGS=$(skopeo list-tags "docker://${IMAGE}" | jq -r '.Tags[]'); then
+            echo "::error::Impossible de lister les tags de ${IMAGE}"
+            exit 1
+          fi
+          # Tags posés par BlueBuild pour ce commit : « <sha>-candidate-<version Fedora> » attendu
+          DU_COMMIT=$(grep -E "^${SHA7}-" <<<"$TAGS" || true)
+          TAG=$(grep -E "^${SHA7}-candidate-[0-9]+$" <<<"$DU_COMMIT" | head -n1 || true)
           if [ -z "$TAG" ]; then
-            echo "::error::Aucune image candidate trouvée pour le commit ${SHA7}"
+            echo "::error::Aucune image candidate pour ${SHA7}. Tags du commit : $(tr '\n' ' ' <<<"${DU_COMMIT:-aucun}") | Derniers tags : $(tail -n 8 <<<"$TAGS" | tr '\n' ' ')"
             exit 1
           fi
           DIGEST=$(skopeo inspect --format '{{.Digest}}' "docker://${IMAGE}:${TAG}")
