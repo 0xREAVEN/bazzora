@@ -112,11 +112,14 @@ ujust toggle-amdgpu-overdrive
 # Toggle native Proton Wayland & HDR (or inspect monitor HDR EDID peak nits)
 ujust toggle-proton-hdr
 
-# Force global FSR 4 upgrade for supported RDNA 3/4 titles
+# Force global FSR 4 upgrade for supported RDNA 4 titles (wraps Bazzite's global-fsr4)
 ujust toggle-fsr4
 
 # Full system update (parallel OSTree, Flatpaks, containers, and brew)
 ujust bazzora-update
+
+# Check system health and gaming settings (read-only)
+ujust bazzora-doctor
 
 # Toggle automated Flatpak installation on boot (silences notification popups)
 ujust toggle-flatpak-setup
@@ -133,6 +136,9 @@ ujust setup-gsconnect
 # Install or manage Visual Studio Code via Homebrew
 ujust manage-vscode install
 ```
+
+> Bazzite recipes irrelevant to a Full AMD desktop (Steam Deck, Decky, Framework, Nvidia, Intel, CEC…) are hidden from the list.
+> They remain callable by name. See [`ujust-masked.list`](files/system/usr/share/bazzora/ujust-masked.list).
 
 ---
 

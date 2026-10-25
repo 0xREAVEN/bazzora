@@ -163,6 +163,8 @@ rm -rf /usr/share/ublue-os/dconfs/desktop-silverblue/* 2>/dev/null || true
 echo "4. Nettoyage de l'autostart et des alias de shell..."
 rm -f /etc/skel/.config/autostart/bazzite-portal.desktop
 rm -f /etc/profile.d/bazzite-neofetch.sh
+# Astuces de la bannière : celles de Bazzite citent Lutris et Waydroid (retirés) ; remplacées par 20-bazzora.md
+rm -f /usr/share/ublue-os/motd/tips/20-bazzite.md
 
 # Bash reste le shell par défaut des nouveaux utilisateurs (Fish est retiré de l'image)
 sed -i 's|^SHELL=.*|SHELL=/bin/bash|' /etc/default/useradd 2>/dev/null || true
@@ -203,6 +205,44 @@ echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-waydroid.jus
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-cockpit.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-beesd.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/90-bazzite-de.just
+
+echo "6b. Masquage des recettes ujust sans objet sur un PC fixe Full AMD..."
+# Ajoute l'attribut just [private] devant chaque recette listée : elle disparaît de la
+# liste ujust mais reste appelable. Une recette introuvable (renommée par Bazzite) est
+# simplement signalée ; le build échoue seulement si le justfile devient invalide.
+MASQUES=/usr/share/bazzora/ujust-masked.list
+while IFS= read -r recette; do
+    case "$recette" in ''|'#'*) continue ;; esac
+    fichier=$(grep -rlE --include='*.just' "^${recette}( |:)" /usr/share/ublue-os/ | head -n1 || true)
+    if [ -z "$fichier" ]; then
+        echo "   (introuvable, ignorée) $recette"
+        continue
+    fi
+    # Évite un double [private] si la recette l'est déjà
+    if grep -B1 -E "^${recette}( |:)" "$fichier" | head -n1 | grep -qx '\[private\]'; then
+        continue
+    fi
+    sed -i -E "s/^(${recette}( |:))/[private]\n\1/" "$fichier"
+    echo "   masquée : $recette"
+done < "$MASQUES"
+# Le justfile complet doit toujours se charger
+ujust --summary > /dev/null
+
+echo "6c. Identité de l'image (bannière d'accueil, recettes ujust)..."
+# image-info.json est lu par la bannière et certaines recettes Bazzite :
+# il doit décrire Bazzora et non l'image de base.
+IMAGE_INFO=/usr/share/ublue-os/image-info.json
+if [ -f "$IMAGE_INFO" ]; then
+    jq '. + {
+        "image-name": "bazzora",
+        "image-vendor": "0xreaven",
+        "image-ref": "ostree-image-signed:docker://ghcr.io/0xreaven/bazzora",
+        "image-tag": "latest",
+        "image-branch": "latest"
+    }' "$IMAGE_INFO" > "${IMAGE_INFO}.tmp"
+    mv "${IMAGE_INFO}.tmp" "$IMAGE_INFO"
+    chmod 644 "$IMAGE_INFO"
+fi
 
 echo "7. Suppression des raccourcis d'applications obsolètes ou indésirables..."
 rm -f /usr/share/applications/*waydroid*.desktop /usr/share/applications/Waydroid*.desktop

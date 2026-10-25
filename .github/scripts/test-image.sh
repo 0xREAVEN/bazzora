@@ -59,7 +59,7 @@ fin
 section "2. Commandes ujust"
 if dans_image ujust --summary >/tmp/ujust.txt 2>&1; then
     ok "le justfile ujust complet se charge (aucune recette en double)"
-    for recette in bazzora-update restore-skel setup-gsconnect manage-vscode \
+    for recette in bazzora-update bazzora-doctor restore-skel setup-gsconnect manage-vscode \
                    toggle-amdgpu-overdrive toggle-fsr4 toggle-proton-hdr \
                    toggle-flatpak-setup clean-bazzora setup-brew; do
         if tr ' ' '\n' </tmp/ujust.txt | grep -qx "$recette"; then
@@ -68,6 +68,17 @@ if dans_image ujust --summary >/tmp/ujust.txt 2>&1; then
             ko "recette ujust absente : $recette"
         fi
     done
+    # Recettes Bazzite masquées ([private]) : absentes de la liste
+    VISIBLES=""
+    while IFS= read -r recette; do
+        case "$recette" in ''|'#'*) continue ;; esac
+        tr ' ' '\n' </tmp/ujust.txt | grep -qx "$recette" && VISIBLES+="$recette "
+    done < <(dans_image cat /usr/share/bazzora/ujust-masked.list)
+    if [ -z "$VISIBLES" ]; then
+        ok "recettes Bazzite sans objet masquées"
+    else
+        ko "recettes censées être masquées mais visibles : $VISIBLES"
+    fi
 else
     ko "ujust ne se charge pas"
     sed 's/^/    /' /tmp/ujust.txt | tail -20
@@ -129,7 +140,10 @@ for fichier in \
     /usr/share/backgrounds/bazzora/background.png \
     /usr/share/icons/Bibata-Modern-Ice/index.theme \
     /usr/share/icons/default/index.theme \
-    /usr/libexec/bazzora/pin-deployment; do
+    /usr/libexec/bazzora/pin-deployment \
+    /usr/libexec/bazzora/doctor \
+    /usr/share/bazzora/ujust-masked.list \
+    /usr/share/ublue-os/motd/tips/20-bazzora.md; do
     if dans_image test -s "$fichier"; then ok "$fichier"; else ko "$fichier manquant ou vide"; fi
 done
 
@@ -141,17 +155,34 @@ for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1; do
     fi
 done
 
-if dans_image test -x /usr/libexec/bazzora/pin-deployment; then
-    ok "pin-deployment exécutable"
+for script in pin-deployment doctor; do
+    if dans_image test -x "/usr/libexec/bazzora/$script"; then
+        ok "$script exécutable"
+    else
+        ko "$script non exécutable"
+    fi
+done
+
+# Identité : bannière et image-info.json décrivent Bazzora
+NOM_IMAGE=$(dans_image jq -r '."image-name"' /usr/share/ublue-os/image-info.json 2>/dev/null || true)
+[ "$NOM_IMAGE" = "bazzora" ] && ok "image-info.json : image-name = bazzora" || ko "image-info.json : image-name = ${NOM_IMAGE:-illisible}"
+if dans_image grep -q "Bienvenue sur Bazzora" /usr/share/ublue-os/motd/template.md; then
+    ok "bannière d'accueil Bazzora"
 else
-    ko "pin-deployment non exécutable"
+    ko "bannière d'accueil non personnalisée"
+fi
+if dans_image test -e /usr/share/ublue-os/motd/tips/20-bazzite.md; then
+    ko "astuces Bazzite (Lutris, Waydroid) encore présentes"
+else
+    ok "astuces de la bannière adaptées à Bazzora"
 fi
 fin
 
 # -----------------------------------------------------------------------------
 section "6. Syntaxe des scripts et configurations"
 if dans_image bash -n /etc/profile.d/bazzora-firstrun.sh /etc/profile.d/bazzora-starship.sh \
-    && dans_image bash -n /usr/libexec/bazzora/pin-deployment; then
+    && dans_image bash -n /usr/libexec/bazzora/pin-deployment \
+    && dans_image bash -n /usr/libexec/bazzora/doctor; then
     ok "scripts shell valides"
 else
     ko "erreur de syntaxe dans un script shell"

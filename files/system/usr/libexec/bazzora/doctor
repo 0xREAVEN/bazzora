@@ -1,0 +1,161 @@
+#!/usr/bin/bash
+# =============================================================================
+# Bazzora — diagnostic système et gaming (ujust bazzora-doctor)
+#
+# Lecture seule : aucun réglage n'est modifié. Chaque point affiche
+#   ✅ conforme   ⚠️  à surveiller / optionnel   ❌ problème à corriger
+# Code de sortie : 1 si au moins un ❌, sinon 0.
+# =============================================================================
+set -uo pipefail
+
+ERREURS=0
+AVERTISSEMENTS=0
+ok()   { printf '  ✅ %s\n' "$*"; }
+warn() { printf '  ⚠️  %s\n' "$*"; AVERTISSEMENTS=$((AVERTISSEMENTS + 1)); }
+ko()   { printf '  ❌ %s\n' "$*"; ERREURS=$((ERREURS + 1)); }
+titre() { printf '\n\033[1m%s\033[0m\n' "$*"; }
+
+printf '\033[1m🩺 Diagnostic Bazzora\033[0m\n'
+
+# -----------------------------------------------------------------------------
+titre "Image système"
+STATUS_JSON=$(rpm-ostree status --json 2>/dev/null || echo '{}')
+REF=$(jq -r '.deployments[]? | select(.booted) | ."container-image-reference" // empty' <<<"$STATUS_JSON")
+case "$REF" in
+    ostree-image-signed:*0xreaven/bazzora*) ok "Image Bazzora signée : ${REF#*docker://}" ;;
+    *0xreaven/bazzora*) warn "Image Bazzora non vérifiée ($REF) : rebasez sur ostree-image-signed:docker://ghcr.io/0xreaven/bazzora:latest" ;;
+    "") warn "Référence d'image introuvable" ;;
+    *) ko "Le système ne suit pas Bazzora : $REF" ;;
+esac
+
+if jq -e '.deployments[]? | select(.pinned)' <<<"$STATUS_JSON" >/dev/null; then
+    ok "Déploiement de secours épinglé"
+else
+    warn "Aucun déploiement épinglé (il le sera à la prochaine « ujust bazzora-update »)"
+fi
+
+if jq -e '.deployments[0].booted == false' <<<"$STATUS_JSON" >/dev/null 2>&1; then
+    warn "Une mise à jour est en attente : redémarrez pour l'appliquer"
+fi
+
+ECHECS=$(systemctl --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+if [ -z "${ECHECS// }" ]; then
+    ok "Aucun service système en échec"
+else
+    ko "Services en échec : $ECHECS(voir « systemctl --failed »)"
+fi
+
+# -----------------------------------------------------------------------------
+titre "GPU AMD"
+PILOTES=""
+for d in /sys/class/drm/card[0-9]*/device/driver; do
+    [ -e "$d" ] && PILOTES+="$(basename "$(readlink -f "$d")") "
+done
+if grep -qw amdgpu <<<"$PILOTES"; then
+    ok "Pilote noyau amdgpu actif"
+else
+    ko "Pilote amdgpu non détecté (pilotes : ${PILOTES:-aucun})"
+fi
+
+MESA=$(rpm -q --qf '%{VERSION}\n' mesa-vulkan-drivers 2>/dev/null | head -n1)
+[ -n "$MESA" ] && ok "Mesa $MESA (RADV)" || ko "mesa-vulkan-drivers absent"
+
+if grep -q "amdgpu.ppfeaturemask=0xffffffff" /proc/cmdline; then
+    ok "Overdrive AMD actif (undervolt / ventilateurs pilotables dans LACT)"
+else
+    warn "Overdrive AMD inactif (optionnel : « ujust toggle-amdgpu-overdrive »)"
+fi
+
+if systemctl is-active --quiet lactd.service; then
+    ok "Démon LACT actif"
+else
+    ko "Démon LACT inactif (« sudo systemctl enable --now lactd »)"
+fi
+
+# -----------------------------------------------------------------------------
+titre "Réglages gaming"
+if [ -c /dev/ntsync ]; then
+    ok "NTSYNC disponible (/dev/ntsync)"
+else
+    ko "NTSYNC indisponible : PROTON_USE_NTSYNC=1 sera sans effet"
+fi
+
+ENV_SESSION=$(systemctl --user show-environment 2>/dev/null || true)
+for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1 PROTON_USE_NTSYNC=1; do
+    if grep -qx "$variable" <<<"$ENV_SESSION"; then
+        ok "Variable de session $variable"
+    else
+        ko "Variable $variable absente de la session (reconnectez-vous)"
+    fi
+done
+
+CACHE=$(du -sh "$HOME"/.cache/mesa_shader_cache* 2>/dev/null | awk '{print $1}' | paste -sd+ -)
+ok "Cache de shaders Mesa utilisé : ${CACHE:-vide} (limite 50 Go)"
+
+if [ -f "$HOME/.config/environment.d/99-proton-fsr4.conf" ]; then
+    ok "FSR 4 global activé"
+else
+    warn "FSR 4 global désactivé (optionnel : « ujust toggle-fsr4 »)"
+fi
+
+VRR=$(gsettings get org.gnome.mutter experimental-features 2>/dev/null || true)
+if grep -q variable-refresh-rate <<<"$VRR"; then
+    ok "VRR disponible dans GNOME (à activer par écran dans Paramètres › Écrans)"
+else
+    warn "VRR non activé dans les fonctionnalités expérimentales de Mutter"
+fi
+
+if command -v powerprofilesctl >/dev/null 2>&1; then
+    PROFIL=$(powerprofilesctl get 2>/dev/null || echo inconnu)
+    case "$PROFIL" in
+        performance) ok "Profil d'énergie : performance" ;;
+        *) warn "Profil d'énergie : $PROFIL (« performance » est préférable pendant les sessions de jeu)" ;;
+    esac
+fi
+
+# -----------------------------------------------------------------------------
+titre "Noyau et système"
+CC=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || true)
+[ "$CC" = "bbr" ] && ok "TCP BBR actif" || ko "Contrôle de congestion TCP : ${CC:-inconnu} (bbr attendu)"
+
+RT=$(sysctl -n kernel.sched_rt_runtime_us 2>/dev/null || true)
+[ "$RT" != "-1" ] && ok "Limitation temps réel du noyau conservée ($RT)" || ko "kernel.sched_rt_runtime_us = -1 (risque de gel)"
+
+THP=$(cat /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null || true)
+if grep -q '\[defer+madvise\]' <<<"$THP"; then
+    ok "Défragmentation THP : defer+madvise"
+else
+    warn "Défragmentation THP : ${THP:-inconnue} (defer+madvise attendu)"
+fi
+
+SWAP=$(swapon --noheadings --show=NAME 2>/dev/null | grep -c zram || true)
+[ "${SWAP:-0}" -ge 1 ] && ok "Swap ZRAM actif" || warn "Aucun swap ZRAM actif"
+
+for unite in cockpit.socket cockpit.service; do
+    ETAT=$(systemctl is-enabled "$unite" 2>/dev/null || true)
+    [ "$ETAT" = "masked" ] && ok "$unite masqué" || ko "$unite non masqué ($ETAT)"
+done
+
+if [ -f /var/lib/flatpak/overrides/global ]; then
+    ok "Overrides Flatpak globaux en place (curseur / icônes)"
+else
+    warn "Overrides Flatpak globaux absents (créés au prochain démarrage)"
+fi
+
+LIBRE=$(df -P / 2>/dev/null | awk 'NR==2 {print int($4/1048576)}')
+if [ -n "$LIBRE" ] && [ "$LIBRE" -lt 20 ]; then
+    warn "Espace libre sur / : ${LIBRE} Go (« ujust clean-bazzora » peut en libérer)"
+else
+    ok "Espace libre sur / : ${LIBRE:-?} Go"
+fi
+
+# -----------------------------------------------------------------------------
+printf '\n'
+if [ "$ERREURS" -eq 0 ] && [ "$AVERTISSEMENTS" -eq 0 ]; then
+    printf '🎉 \033[32mTout est conforme.\033[0m\n'
+elif [ "$ERREURS" -eq 0 ]; then
+    printf '👍 \033[32mAucun problème.\033[0m %d point(s) optionnel(s) ou à surveiller.\n' "$AVERTISSEMENTS"
+else
+    printf '🛑 \033[31m%d problème(s)\033[0m et %d point(s) à surveiller.\n' "$ERREURS" "$AVERTISSEMENTS"
+    exit 1
+fi
