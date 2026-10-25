@@ -106,10 +106,20 @@ else
     sed 's/^/    /' <<<"$MANQUANTS"
 fi
 
+# Paquets volontairement conservés (retrait ciblé) : matériel utilisé, snapshots, gestion multi-GPU
+GARDES=(cardwire ds-inhibit snapper bees btrfs-assistant broadcom-wl kmod-evdi new-lg4ff hid-fanatecff hid-tmff2 t150-driver)
+ABSENTS=$(dans_image rpm -q "${GARDES[@]}" 2>&1 | grep "is not installed" || true)
+if [ -z "$ABSENTS" ]; then
+    ok "les ${#GARDES[@]} paquets conservés sont présents"
+else
+    ko "paquets censés être conservés mais absents :"
+    sed 's/^/    /' <<<"$ABSENTS"
+fi
+
 # Paquets interdits par la politique Full AMD (qu'ils viennent de la base ou non)
-INTERDITS=$(dans_image bash -c 'rpm -qa | grep -Ei "^(waydroid|cockpit|hhd|inputplumber|nvidia|ryzenadj|fw-|libcec|xwiimote)" || true')
+INTERDITS=$(dans_image bash -c 'rpm -qa | grep -Ei "^(waydroid|hhd|inputplumber|nvidia)" || true')
 if [ -z "$INTERDITS" ]; then
-    ok "aucun paquet Waydroid / Cockpit / handheld / Nvidia / laptop"
+    ok "aucun paquet Waydroid / handheld / Nvidia"
 else
     ko "paquets interdits détectés :"
     sed 's/^/    /' <<<"$INTERDITS"

@@ -1,235 +1,143 @@
 <div align="center">
 
-# Bazzora 🚀
+# Bazzora
 
-**Custom, immutable, and debloated atomic operating system optimized for Full AMD Desktop Gaming.**
-
-[🇬🇧 English](README.md) • [🇫🇷 Français](README.fr.md)
-
-[![Français](https://img.shields.io/badge/🇫🇷_Passer_au_Français-Lire_le_README-blue?style=for-the-badge)](README.fr.md)
-
-<br/>
+**Mon image Bazzite-GNOME personnelle, pour un PC fixe Full AMD (Ryzen 7 9800X3D + Radeon).**
 
 [![BlueBuild Build](https://github.com/0xREAVEN/bazzora/actions/workflows/build.yml/badge.svg)](https://github.com/0xREAVEN/bazzora/actions/workflows/build.yml)
-![Base Image](https://img.shields.io/badge/Base-Bazzite--GNOME-purple?logo=linux)
-![Hardware Target](https://img.shields.io/badge/Target-Full%20AMD%20(CPU%20%2B%20GPU)-ed1c24?logo=amd)
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
-![Framework](https://img.shields.io/badge/Built%20with-BlueBuild-cyan)
+![Base](https://img.shields.io/badge/Base-Bazzite--GNOME-purple?logo=linux)
+![Licence](https://img.shields.io/badge/Licence-Apache%202.0-blue.svg)
+![BlueBuild](https://img.shields.io/badge/Conçu%20avec-BlueBuild-cyan)
 
 </div>
 
 ---
 
-**Bazzora** is an immutable, atomic OCI container operating system based on **Fedora Atomic / Bazzite-GNOME**, tailored specifically for high-performance **Full AMD** gaming desktops (AMD Ryzen CPU + AMD Radeon GPU).
+Bazzora est une image OCI immuable construite avec [BlueBuild](https://blue-build.org/) au-dessus de
+[`bazzite-gnome`](https://bazzite.gg/). C'est un projet personnel : il adapte Bazzite à **ma** machine
+et à mes habitudes, sans prétendre être une distribution plus rapide que Bazzite.
 
-It bridges the gap between the **gaming stack inherited from Bazzite** (gaming kernel, 32/64-bit Mesa RADV/ACO, ZRAM, NTSYNC module, FSR 4 upgrade) and the **rock-solid sobriety of vanilla Fedora Silverblue** — completely stripping away mobile console daemons, unneeded hypervisor modules, Android subsystems, and desktop bloatware.
+Le principe : garder tout ce que Bazzite fait bien, ajouter quelques outils et réglages, et ne retirer
+que ce qui tourne, se charge au démarrage ou s'affiche à l'écran sans servir sur cette machine.
 
----
-
-## ⚖️ Why Bazzora? (Comparison)
-
-| Feature | Vanilla Silverblue | Default Bazzite | **Bazzora** |
-| :--- | :---: | :---: | :---: |
-| **Gaming Kernel (Bazzite / OGC)** | ❌ (Stock generic) | ✅ | ✅ **Inherited** |
-| **Mesa RADV ACO (32 & 64-bit)** | ✅ (Fedora build) | ✅ | ✅ **Inherited** |
-| **Mesa XXL Shader Cache (50 GB anti-stutter)** | ❌ (Default 1 GB) | ❌ (Default 1 GB) | ✅ **Yes (50 GB)** |
-| **Proton Wayland & Native HDR (Mutter Direct)** | ❌ | ⚠️ (Gamescope only) | ✅ **Yes (`ujust`)** |
-| **Proton NTSYNC Kernel Fastpath** | ❌ | ⚠️ (Module loaded, Proton variable manual) | ✅ **`PROTON_USE_NTSYNC=1` by default** |
-| **AMD GPU Overdrive & LACT (Undervolt/Fans)** | ❌ | ⚠️ (Flatpak, manual sudo) | ✅ **Native RPM + `lactd` daemon** |
-| **Disk Partitioning Suite** | ❌ (Disks only) | ❌ (Disks only) | ✅ **GParted (Native RPM)** |
-| **Audio Crackle Guard (PipeWire min-quantum)** | ❌ (min 32) | ❌ (min 32) | ✅ **Min 256** |
-| **Gaming Sysctl Tuning** | ❌ | ⚠️ (`max_map_count`, BBR, ZRAM zstd) | ✅ **+ swappiness, dirty limits, `fq`** |
-| **Mutter VRR & XWayland Native Scaling** | ❌ | ❌ | ✅ **Unlocked (VRR per display)** |
-| **Clean Vanilla Desktop (Zero bloatware extensions)**| ✅ | ❌ (Compiz effects / Docks) | ✅ **Pure GNOME** |
-| **Default Aesthetics (Bibata Ice & Papirus-Dark)** | ❌ (Adwaita) | ❌ (Adwaita) | ✅ **Bibata Modern Ice + Papirus** |
-| **Android / Waydroid Subsystem** | ❌ | ⚠️ (Bundled) | 🚫 **Completely purged** |
-| **Handheld / Steam Deck Extras** | ❌ | ⚠️ (Deck presets & tools) | 🚫 **Purged** |
-| **Server Administration Stack (Cockpit)** | ❌ | ⚠️ (Installed, inactive) | 🚫 **Purged & masked** |
+Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas été mesurés.
 
 ---
 
-## ⚡ Core Features & Optimizations
+## Hérité de Bazzite (non modifié)
 
-### 🎮 Full AMD High-Performance Gaming Stack
-* **RADV Vulkan with ACO Compiler** : 32 and 64-bit Mesa inherited from Bazzite.
-* **XXL Mesa Shader Cache (50 GB)** : Preconfigured via [10-amd-gaming.conf](files/system/etc/environment.d/10-amd-gaming.conf) (`MESA_SHADER_CACHE_MAX_SIZE=50G`) to keep compiled shaders instead of evicting them at Mesa's default 1 GB limit (up to 50 GB of disk in `~/.cache`).
-* **Proton NTSYNC Fastpath** : `PROTON_USE_NTSYNC=1` enabled out of the box for ultra-low overhead Windows NT synchronization.
-* **AMD GPU Services (AGS) & FSR 4 Ready** : `PROTON_ENABLE_AMD_AGS=1` enabled for native FidelityFX features, with Bazzite's global FSR 4 upgrade available via `ujust global-fsr4` (RDNA 4).
-* **Proton Wayland & Native HDR** : Command `ujust toggle-proton-hdr` enables native Wayland rendering and direct Mutter HDR passthrough without the compositing overhead or color banding of nested Gamescope.
-* **LACT Native RPM + Auto-Started `lactd` Daemon** : AMD GPU control panel (overclocking, undervolting, custom fan curves) packaged natively via official COPR. The `lactd.service` runs as a system daemon on boot, enabling immediate hardware control without requiring root passwords.
-* **One-Click AMD Overdrive** : `ujust toggle-amdgpu-overdrive` adds only the overdrive bit (`0x4000`) to the driver's `amdgpu.ppfeaturemask`, the same method Bazzite uses on handhelds.
+* Noyau gaming de Bazzite (OGC), Mesa RADV/ACO en 32 et 64 bits, Steam, Gamescope.
+* `vm.max_map_count = 2147483642`, contrôle de congestion TCP `bbr`, ZRAM compressé en zstd.
+* Module `ntsync` chargé au démarrage, profils d'énergie tuned (`balanced` / `performance`).
+* Watchdogs actifs (récupération après un blocage complet) : `ujust configure-watchdog` pour les désactiver.
+* Délai de 20 s avant la fenêtre *« L'application ne répond pas »*.
+* Upgrade FSR 4 global pour les Radeon RDNA 4 : `ujust global-fsr4`.
 
-### ⚙️ Kernel & System Tuning (CachyOS & SteamOS Standards)
-* **Inherited from Bazzite** (not redefined): `vm.max_map_count = 2147483642`, TCP `bbr` congestion control, ZRAM with zstd compression, `ntsync` module loaded at boot.
-* **Gaming Memory & Swappiness Profile** ([99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf)):
-  * `vm.swappiness = 100` (kernel default: 60), suited to Bazzite's ZRAM swap.
-  * `dirty_bytes` limits (256 MB dirty / 64 MB background) to write data back in smaller batches, with a 15 s write-back interval. Kept in the `performance` power mode through a Bazzora tuned profile ([throughput-performance-bazzora](files/system/usr/lib/tuned/profiles/throughput-performance-bazzora/tuned.conf)).
-  * `fq` packet pacing (Fedora default: `fq_codel`). BBR, provided by Bazzite, only applies to TCP, not to the UDP traffic most online games use.
-* **Transparent Hugepages (THP) Defrag** ([bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf)):
-  * `defrag` set to `defer+madvise` (THP itself stays in the kernel's `madvise` mode) and `khugepaged/max_ptes_none = 409`.
-* **Audio Crackle Guard** ([10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf)):
-  * PipeWire `min-quantum = 256`: applications can no longer request buffers below 256 samples (≈ 5.3 ms at 48 kHz), which reduces crackling under heavy CPU load such as shader compilation. The default quantum stays at 1024: this is not a latency reduction.
-* **Watchdogs kept** as on Bazzite (recovery after a hard lockup); `ujust configure-watchdog` turns them off.
+## Ajouts
 
-### 🖥️ Clean GNOME Environment & Modern Styling
-* **Mutter Gaming Tweaks**:
-  * Variable Refresh Rate (VRR / FreeSync), `scale-monitor-framebuffer` and `xwayland-native-scaling` experimental features unlocked. VRR is then enabled per display in Settings › Displays.
-  * Bazzite's 20 s *"Application is not responding"* timeout is kept: long loading screens are tolerated and frozen apps can still be force-quit.
-  * Flat mouse acceleration curve (`accel-profile='flat'`) for raw 1:1 precision competitive aim.
-* **Default Aesthetics**:
-  * **Cursor Theme** : **Bibata Modern Ice** installed system-wide (`/usr/share/icons/default/index.theme`, GNOME, GTK 3 & GTK 4, Flatpaks, XWayland).
-  * **Icon Theme** : **Papirus-Dark** providing clean, high-contrast monochrome system panel icons alongside colorful app icons.
-  * **GTK Theme** : Dark mode by default (`adw-gtk3-dark` + `color-scheme='prefer-dark'`).
-* **Clean Productivity**:
-  * Pre-packaged **GParted** for advanced drive management.
-  * **ExtensionManager** installed in Flatpak to manage user extensions safely.
-  * Useful shortcuts: `Ctrl+Alt+T` (Ptyxis terminal) and `Ctrl+Shift+Esc` (Mission Center).
-  * Purged KDE-based updater in favor of the lightweight, yellow-icon `ujust bazzora-update` desktop launcher.
+* **Paquets RPM** : [LACT](https://github.com/ilya-zlobintsev/LACT) (COPR `ilyaz/LACT`) avec le démon `lactd` activé au démarrage,
+  Starship (COPR `atim/starship`), GParted, Papirus, gnome-initial-setup.
+* **Curseur Bibata Modern Ice** (version figée, empreinte SHA-256 vérifiée au build), thème sombre `adw-gtk3-dark`, icônes Papirus-Dark,
+  polices Nerd Fonts (FiraCode, JetBrainsMono, Hack).
+* **Flatpaks installés au premier démarrage** : applications GNOME de base, Firefox, Mission Center, Flatseal, Warehouse,
+  Gear Lever, Extension Manager, Refine, Heroic, Faugus Launcher, ProtonPlus, GOverlay (liste dans [recipe.yml](recipes/recipe.yml)).
+* **Bureau GNOME épuré** : seules les extensions AppIndicator (active) et GSConnect sont conservées ; raccourcis
+  `Ctrl+Alt+T` (Ptyxis) et `Ctrl+Maj+Échap` (Mission Center).
+* **Bash + Starship** à la place de Fish, avec une initialisation au premier terminal
+  ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)).
 
-### 🧹 Surgical Debloat (Stripped Down for Pure Desktop)
-* **Android / Waydroid** : Completely purged along with binder libraries (`waydroid`, `libgbinder`, `python3-gbinder`).
-* **Server Administration** : Purged Cockpit packages (installed but inactive on Bazzite) and masked `cockpit.socket` / `cockpit.service`.
-* **Handhelds & Laptops** : No handheld daemons (`hhd`, `inputplumber` are not part of the desktop base), purged Framework laptop modules (`fw-fanctrl`), and mobile APU tools (`ryzenadj`).
-* **Snapshot Tools** : Purged `bees`, `snapper` and `btrfs-assistant`. They are not enabled by default on Bazzite: this frees disk space and attack surface, not RAM or CPU at runtime.
-* **Extraneous Hardware** : Purged Intel/Nvidia GPU firmwares and Intel media drivers (Mesa itself is unchanged), virtual machine guest agents (QEMU, VMware, VirtualBox, Hyper-V, Spice), and racing wheel drivers (Fanatec, Thrustmaster, Logitech `new-lg4ff`).
-* **Also removed — check before installing** : accessibility stack (Orca screen reader, braille `brltty`, speech synthesis), Broadcom Wi-Fi drivers (`broadcom-wl`, `b43`), DisplayLink (`evdi`), Razer peripherals (`openrazer`), Looking Glass (`kvmfr`), HDMI-CEC, fingerprint reader, Lutris, Fish and Yelp. Full list in [recipe.yml](recipes/recipe.yml).
+## Réglages
 
-### 🐚 Shell & Terminal Experience
-* **Bash, bash-completion & Starship Prompt** : Configured out-of-the-box with Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`).
-* **Fastfetch** : Custom layout highlighting your Ryzen CPU and Radeon GPU status.
-* **Seamless First Run** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Applies Bazzora configs and resets the Ptyxis profile to the login shell (Bash) on first launch.
+| Réglage | Valeur | Ce que ça fait | Fichier |
+| :--- | :--- | :--- | :--- |
+| Cache de shaders Mesa | `MESA_SHADER_CACHE_MAX_SIZE=50G` | Garde les shaders compilés au-delà de la limite Mesa par défaut (1 Go). Peut occuper jusqu'à 50 Go dans `~/.cache`. | [10-amd-gaming.conf](files/system/etc/environment.d/10-amd-gaming.conf) |
+| Proton | `PROTON_USE_NTSYNC=1`, `PROTON_ENABLE_AMD_AGS=1` | Active NTSYNC et AMD AGS dans les versions de Proton qui lisent ces variables. | idem |
+| Swap | `vm.swappiness = 100` | Utilise davantage le swap ZRAM de Bazzite (60 par défaut dans le noyau). | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
+| Écritures disque | `dirty_bytes` 256 Mo / 64 Mo, écriture toutes les 15 s | Écrit les données par plus petits lots. Également appliqué en mode « performance » via un profil tuned dédié. | idem + [throughput-performance-bazzora](files/system/usr/lib/tuned/profiles/throughput-performance-bazzora/tuned.conf) |
+| Réseau | `net.core.default_qdisc = fq` | Pacing des paquets (Fedora utilise `fq_codel`). Complète le BBR de Bazzite, qui ne concerne que le TCP. | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
+| THP | `defrag = defer+madvise`, `max_ptes_none = 409` | Change la politique de défragmentation des huge pages (elles restent en mode `madvise`). | [bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf) |
+| Audio | PipeWire `min-quantum = 256` | Plancher anti-craquements : aucune application ne descend sous 256 échantillons (≈ 5,3 ms à 48 kHz). Le quantum par défaut reste 1024 ; ce n'est pas une baisse de latence. | [10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf) |
+| Mutter | VRR, `scale-monitor-framebuffer`, `xwayland-native-scaling` | Débloque ces fonctions expérimentales ; la VRR s'active ensuite écran par écran dans Paramètres › Écrans. | [debloat.sh](files/scripts/debloat.sh) |
+| Souris | `accel-profile = 'flat'` | Pas d'accélération du pointeur. | idem |
+
+## Retraits
+
+Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 59 paquets, environ 580 Mo sur une image de 7,8 Go.
+
+* **Retirés parce qu'ils tournent ou se chargent au démarrage** : Waydroid, agents de machines virtuelles
+  (QEMU, Spice, VMware, VirtualBox, Hyper-V), `intel-lpmd`, modules System76, adaptateur GameCube (`gcadapter_oc`), Looking Glass (`kvmfr`).
+* **Retirés parce qu'ils s'affichent** : Lutris, MakeMKV, Yelp, Web App Manager, l'interface de cardwire, l'ancien
+  bazzite-updater, les presets et la recherche Steam Deck (Yafti), l'extension User Themes, Fish.
+* **Retirés pour la place disque** : firmwares et bibliothèques Intel/Nvidia (≈ 370 Mo).
+* **Retirés car inutiles ici** : accessibilité (Orca, braille, synthèse vocale), OpenRazer.
+* **Volontairement conservés** : pilotes de volants (Fanatec, Thrustmaster, Logitech), Wi-Fi Broadcom,
+  DisplayLink, `ds-inhibit` (manettes PlayStation), cardwire (gestion de l'iGPU du 9800X3D), snapper, bees et
+  btrfs-assistant (inactifs tant que `ujust configure-snapshots` / `configure-beesd` ne les activent pas),
+  outils Framework, CEC, lecteur d'empreintes. Cockpit est installé mais ses services sont masqués.
+
+Les recettes ujust de Bazzite sans objet ici (Steam Deck, Decky, Framework, Nvidia, Intel, CEC…) sont masquées
+de la liste mais restent appelables par leur nom : voir [ujust-masked.list](files/system/usr/share/bazzora/ujust-masked.list).
 
 ---
 
-## 🛠️ `ujust` Toolkit (Quick Reference)
-
-Bazzora features dedicated, interactive maintenance recipes:
+## Commandes `ujust`
 
 ```bash
-# Unlock AMD GPU Overdrive (frequencies, undervolt, fan curves in LACT)
-ujust toggle-amdgpu-overdrive
-
-# Toggle native Proton Wayland & HDR (or inspect monitor HDR EDID peak nits)
-ujust toggle-proton-hdr
-
-# Force global FSR 4 upgrade for supported RDNA 4 titles (Bazzite recipe)
-ujust global-fsr4
-
-# Full system update (parallel OSTree, Flatpaks, containers, and brew)
-ujust bazzora-update
-
-# Check system health and gaming settings (read-only)
-ujust bazzora-doctor
-
-# Toggle automated Flatpak installation on boot (silences notification popups)
-ujust toggle-flatpak-setup
-
-# Clean unused Flatpaks, Homebrew caches, and rpm-ostree metadata
-ujust clean-bazzora
-
-# Restore user configuration files from /etc/skel to $HOME
-ujust restore-skel
-
-# Configure firewall ports for GSConnect smartphone pairing
-ujust setup-gsconnect
-
-# Install or manage Visual Studio Code via Homebrew
-ujust manage-vscode install
+ujust bazzora-update            # Mise à jour système, Flatpaks, Homebrew, Distrobox (épingle d'abord le déploiement actuel)
+ujust bazzora-doctor            # Diagnostic en lecture seule : image, GPU, réglages, services
+ujust toggle-amdgpu-overdrive   # Ajoute le bit overdrive (0x4000) au masque amdgpu, comme Bazzite, pour LACT
+ujust toggle-proton-hdr         # Proton Wayland + HDR pour tous les jeux, ou lecture des métadonnées HDR de l'écran
+ujust global-fsr4               # (Bazzite) Upgrade FSR 4 global sur RDNA 4
+ujust configure-snapshots       # (Bazzite) Snapshots snapper de /var/home
+ujust toggle-flatpak-setup      # Active ou coupe l'installation automatique des Flatpaks au démarrage
+ujust clean-bazzora             # Nettoie Flatpaks inutilisés, cache Homebrew et métadonnées rpm-ostree
+ujust restore-skel              # Copie les configurations de /etc/skel dans $HOME
+ujust setup-gsconnect           # Ouvre ou ferme les ports du pare-feu pour GSConnect
+ujust setup-brew                # Installe bbrew (interface Homebrew)
+ujust manage-vscode install     # Installe ou retire VS Code via Homebrew
 ```
 
-> Bazzite recipes irrelevant to a Full AMD desktop (Steam Deck, Decky, Framework, Nvidia, Intel, CEC…) are hidden from the list.
-> They remain callable by name. See [`ujust-masked.list`](files/system/usr/share/bazzora/ujust-masked.list).
-
 ---
 
-## 🚀 Installation & Deployment
+## Installation
 
-### Option A — Clean Install via Bazzora ISO (USB Drive)
-*Recommended for a fresh, optimal bare-metal installation:*
+### ISO
+1. Télécharger les parties `bazzora-latest.iso.part*` et `bazzora-latest.iso-CHECKSUM` depuis les
+   [Releases](https://github.com/0xREAVEN/bazzora/releases).
+2. Reconstituer et vérifier :
+   * Linux : `cat bazzora-latest.iso.part* > bazzora-latest.iso && sha256sum -c bazzora-latest.iso-CHECKSUM`
+   * Windows : `cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso`, puis comparer `Get-FileHash bazzora-latest.iso -Algorithm SHA256` au fichier d'empreinte.
+3. Copier l'ISO sur une clé [Ventoy](https://www.ventoy.net/) ou la flasher avec [BalenaEtcher](https://etcher.balena.io/), puis démarrer dessus.
 
-1. **Download** the ISO parts (`bazzora-latest.iso.part*`) and `bazzora-latest.iso-CHECKSUM` from the [Releases](https://github.com/0xREAVEN/bazzora/releases) page of this repository.
-2. **Recombine** the ISO in your download directory, then check it against the checksum file:
-   * **Linux / macOS:** `cat bazzora-latest.iso.part* > bazzora-latest.iso && sha256sum -c bazzora-latest.iso-CHECKSUM`
-   * **Windows:** `cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso`, then compare `Get-FileHash bazzora-latest.iso -Algorithm SHA256` with the checksum file
-3. **Flash** `bazzora-latest.iso` to a USB drive using [Ventoy](https://www.ventoy.net/) (simply copy the `.iso` onto the drive) or [BalenaEtcher](https://etcher.balena.io/).
-4. **Boot** your computer from the USB drive and complete the graphical installer.
-
----
-
-### Option B — Rebase from Bazzite or Fedora Silverblue
-*To convert an existing atomic installation without formatting your drive:*
-
-#### 1. Rebase to the initial unverified image
+### Rebase depuis Bazzite ou Silverblue
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/0xreaven/bazzora:latest
-```
-
-#### 2. Reboot
-```bash
 systemctl reboot
-```
-
-#### 3. Initialize your user environment
-> [!NOTE]
-> On a fresh ISO install, user accounts receive all configurations automatically.
-> Following a rebase, run this one-time command to apply the Bazzora profile and Ptyxis configuration:
-
-```bash
-ujust restore-skel
-```
-*(Choose `M` to copy missing files without overwriting your personal files).*
-
-#### 4. Switch to the cryptographically signed stream (Cosign verified)
-```bash
+ujust restore-skel        # « M » : copie les fichiers manquants sans écraser les vôtres
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/0xreaven/bazzora:latest
-```
-
-#### 5. Final Reboot
-```bash
 systemctl reboot
 ```
 
 ---
 
-## 🛡️ Atomic Security & Rollback
+## Retour arrière et sécurité
 
-### Instant System Rollback
-If any upstream update introduces an issue, roll back instantly:
-
-* **From the active desktop terminal:**
-  ```bash
-  rpm-ostree rollback
-  systemctl reboot
-  ```
-* **From the GRUB boot menu:** Select the previous deployment entry to boot directly into your prior working state.
-
-### Pinned Fallback Deployment
-Before every update, `ujust bazzora-update` **pins the currently booted deployment** (the one that works).
-It stays available in the boot menu even after several failed updates in a row.
-Only one Bazzora pin exists at a time, and your manual pins (`ostree admin pin`) are never touched.
-
-### Tested Releases
-Every build is first published under the `candidate` tag, then goes through automated smoke tests run inside a container
-(no boot, no GPU): `bootc` compliance, `ujust` loading, removed/added packages, services (LACT, masked Cockpit),
-configuration files, GSettings schemas and Cosign signature. The image only becomes `latest` if **all** tests pass.
-Otherwise you stay on the last validated release.
-
-### Image Signature Verification
-Verify image authenticity and integrity using Cosign and the public key:
-```bash
-cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora
-```
+* **Retour arrière** : `rpm-ostree rollback && systemctl reboot`, ou choisir le déploiement précédent dans le menu de démarrage.
+* **Version de secours épinglée** : avant chaque mise à jour, `ujust bazzora-update` épingle le déploiement en cours.
+  Une seule épingle Bazzora existe à la fois ; les épingles manuelles (`ostree admin pin`) ne sont jamais touchées.
+* **Publication testée** : chaque build est publié sous le tag `candidate`, puis passe des tests de fumée dans un conteneur
+  (sans démarrage réel ni GPU) : conformité `bootc`, chargement de `ujust`, paquets retirés et conservés, services
+  (LACT, Cockpit masqué), fichiers de configuration, schémas GSettings, signature Cosign. Il ne devient `latest`
+  que si tous les tests passent ([build.yml](.github/workflows/build.yml), [test-image.sh](.github/scripts/test-image.sh)).
+* **Signature** : `cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora`
 
 ---
 
-## 📜 License & Credits
+## Licence et remerciements
 
-Distributed under the **Apache 2.0** license. See [LICENSE](LICENSE) for details.
+Licence **Apache 2.0** (voir [LICENSE](LICENSE)).
 
-Special thanks to the open-source projects empowering Bazzora:
-* [Fedora Silverblue](https://fedoraproject.org/silverblue/) & [Universal Blue](https://universal-blue.org/)
-* [Bazzite](https://bazzite.gg/) for the upstream gaming kernel, Mesa stack, ZRAM and sysctl base
-* [BlueBuild](https://blue-build.org/) for declarative containerized OS image builds
-* [CachyOS](https://cachyos.org/) for kernel schedulers and gaming sysctl guidelines
-* [LACT](https://github.com/ilya-zlobintsev/LACT) for the Linux AMDGPU control and monitoring suite
-* [Bibata Cursor](https://github.com/ful1e5/Bibata_Cursor) & [Papirus Development Team](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) for the desktop styling
+Merci à [Bazzite](https://bazzite.gg/) et [Universal Blue](https://universal-blue.org/), sur qui tout repose,
+à [BlueBuild](https://blue-build.org/), [Fedora Silverblue](https://fedoraproject.org/silverblue/),
+[LACT](https://github.com/ilya-zlobintsev/LACT), [Bibata Cursor](https://github.com/ful1e5/Bibata_Cursor)
+et [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme).

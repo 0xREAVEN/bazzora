@@ -203,8 +203,8 @@ fi
 
 echo "6. Neutralisation sécurisée des recettes ujust devenues obsolètes..."
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-waydroid.just
+# Cockpit : paquets conservés mais services masqués (recipe.yml), la recette de Bazzite ne doit pas les réactiver
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-cockpit.just
-echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-beesd.just
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/90-bazzite-de.just
 
 echo "6b. Masquage des recettes ujust sans objet sur un PC fixe Full AMD..."
@@ -263,7 +263,6 @@ rm -f /usr/share/applications/bazzite-landing.desktop
 rm -f /usr/share/applications/discourse.desktop
 rm -f /usr/share/applications/org.gnome.Yelp.desktop
 rm -f /usr/share/applications/*yelp*.desktop
-rm -f /usr/share/applications/btrfs-assistant.desktop
 rm -f /usr/share/applications/orca.desktop
 rm -f /etc/xdg/autostart/orca-autostart.desktop
 rm -f /usr/share/applications/io.github.rfrench3.bazzite-updater.desktop
