@@ -66,6 +66,11 @@ bazzora-update:
         exit 1
     fi
 
+# Diagnostic en lecture seule : image, GPU AMD, réglages gaming, noyau et services
+[group("system")]
+bazzora-doctor:
+    /usr/libexec/bazzora/doctor
+
 # Ouverture et fermeture des ports pour GSConnect
 [group("system")]
 setup-gsconnect:
@@ -220,27 +225,13 @@ clean-bazzora:
 # 🎮 GAMING & HDR
 # ==================================================
 
-# Force l'upgrade FSR 4 (RDNA 4)
+# Délègue à « ujust global-fsr4 » de Bazzite (même fichier, gestion des versions de Proton à jour).
+# Force l'upscaling FSR 4 (RDNA 4) sur les jeux FSR 3.1+ sous Proton. Options : enable | disable
 [group("gaming")]
-toggle-fsr4:
+toggle-fsr4 ACTION="":
     #!/usr/bin/bash
     set -euo pipefail
-    FILE="$HOME/.config/environment.d/99-proton-fsr4.conf"
-    echo -e "\033[1mGlobal FSR 4 (RDNA 4)\033[0m"
-    echo "Permet à Proton de forcer le FSR 4 sur les jeux compatibles (FSR 3.1+)."
-    read -p "Voulez-vous (A)ctiver ou (D)ésactiver ? " choice
-    case "$choice" in
-        A|a)
-            mkdir -p "$HOME/.config/environment.d"
-            echo "PROTON_FSR4_UPGRADE=1" > "$FILE"
-            echo -e "✅ \033[32mActivé\033[0m : PROTON_FSR4_UPGRADE=1 (reconnectez votre session pour appliquer)"
-            ;;
-        D|d)
-            rm -f "$FILE"
-            echo -e "❌ \033[31mDésactivé\033[0m : PROTON_FSR4_UPGRADE retiré"
-            ;;
-        *) echo "Action annulée." ;;
-    esac
+    ujust global-fsr4 {{ ACTION }}
 
 # Active/Désactive le HDR et Wayland natif sous Proton (sans Gamescope) ou affiche les Nits EDID de l'écran
 [group("gaming")]

@@ -1,0 +1,34 @@
+# Recettes ujust de Bazzite masquées sur Bazzora (attribut just [private]).
+# Elles disparaissent de « ujust » et « ujust --choose » mais restent appelables par leur nom.
+# Une recette par ligne ; les lignes vides et les commentaires sont ignorés.
+# Utilisé par files/scripts/debloat.sh (build) et .github/scripts/test-image.sh (CI).
+
+# --- Paquets retirés par le debloat (recettes cassées) ---
+cec-mode
+cec-sleep
+configure-broadcom-wl
+configure-snapshots
+enable-framework-fan-control
+install-displaylink
+add-updater-to-steam
+
+# --- Matériel non AMD ---
+toggle-nvk
+toggle-i915-sleep-fix
+
+# --- Laptops / Framework / ROG ---
+enable-framework-automount
+disable-framework-automount
+asus
+
+# --- Consoles portables / Steam Deck / Decky ---
+set-default-desktop
+set-default-game-mode
+setup-decky
+get-decky-bazzite-buddy
+get-decky-lossless-scaling
+get-framegen
+restore-input-remapper
+
+# --- En conflit avec Bazzora (watchdog AMD désactivé via modprobe.d) ---
+configure-watchdog
