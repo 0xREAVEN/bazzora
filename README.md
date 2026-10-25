@@ -85,19 +85,19 @@ It bridges the gap between the **hardcore gaming optimizations of Valve/Bazzite*
   * Pre-packaged **GParted** for advanced drive management.
   * **ExtensionManager** installed in Flatpak to manage user extensions safely.
   * Useful shortcuts: `Ctrl+Alt+T` (Ptyxis terminal) and `Ctrl+Shift+Esc` (Mission Center).
-  * Purged KDE-based updater in favor of the lightweight, yellow-icon `ujust update` desktop launcher.
+  * Purged KDE-based updater in favor of the lightweight, yellow-icon `ujust bazzora-update` desktop launcher.
 
 ### 🧹 Surgical Debloat (Stripped Down for Pure Desktop)
 * **Android / Waydroid** : Completely purged along with binder libraries (`waydroid`, `libgbinder`, `python3-gbinder`).
-* **Server Administration** : Purged Cockpit web services and administrative sockets.
-* **Handhelds & Laptops** : Purged Steam Deck / ROG Ally / Legion Go daemons (`hhd`, `inputplumber`), Framework laptop modules (`fw-fanctrl`), and mobile APU tools (`ryzenadj`).
+* **Server Administration** : Purged Cockpit packages and masked `cockpit.socket` / `cockpit.service`.
+* **Handhelds & Laptops** : No handheld daemons (`hhd`, `inputplumber` are not part of the desktop base), purged Framework laptop modules (`fw-fanctrl`), and mobile APU tools (`ryzenadj`).
 * **Heavy Daemons** : Purged resource-heavy snapshot schedulers (`bees`, `snapper`, `btrfs-assistant`) for instant RAM and CPU savings.
 * **Extraneous Hardware** : Purged non-AMD GPU drivers (Intel/Nvidia firmwares and media drivers), virtual machine guest agents (QEMU, VMware, VirtualBox, Hyper-V, Spice), and unneeded racing wheel modules.
 
 ### 🐚 Shell & Terminal Experience
-* **Fish Shell & Starship Prompt** : Configured out-of-the-box with Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`) and clean aliases.
+* **Bash, bash-completion & Starship Prompt** : Configured out-of-the-box with Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`).
 * **Fastfetch** : Custom layout highlighting your Ryzen CPU and Radeon GPU status.
-* **Seamless First Run** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Automatically sets up Ptyxis terminal profile for Fish on initial launch without blocking `chsh`.
+* **Seamless First Run** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Applies Bazzora configs and resets the Ptyxis profile to the login shell (Bash) on first launch.
 
 ---
 
@@ -116,7 +116,7 @@ ujust toggle-proton-hdr
 ujust toggle-fsr4
 
 # Full system update (parallel OSTree, Flatpaks, containers, and brew)
-ujust update
+ujust bazzora-update
 
 # Toggle automated Flatpak installation on boot (silences notification popups)
 ujust toggle-flatpak-setup
@@ -166,7 +166,7 @@ systemctl reboot
 #### 3. Initialize your user environment
 > [!NOTE]
 > On a fresh ISO install, user accounts receive all configurations automatically.
-> Following a rebase, run this one-time command to apply the Bazzora profile and Ptyxis Fish configuration:
+> Following a rebase, run this one-time command to apply the Bazzora profile and Ptyxis configuration:
 
 ```bash
 ujust restore-skel

@@ -29,7 +29,7 @@ jobs:
           df -h /
 
       - name: Build Container Installer ISO
-        uses: jasonn3/build-container-installer@main
+        uses: jasonn3/build-container-installer@v1.5.0 # version figée (Dependabot propose les mises à jour)
         id: build
         with:
           arch: x86_64

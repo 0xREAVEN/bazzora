@@ -31,6 +31,12 @@ modules:
       # --- Lanceurs non désirés ---
       - lutris
 
+      # --- Shell Fish (remplacé par Bash + bash-completion + Starship) ---
+      - fish
+
+      # --- Extensions GNOME paquetées en RPM (les autres sont retirées par debloat.sh) ---
+      - gnome-shell-extension-user-theme
+
       # --- Démons lourds & gestionnaires de snapshots (Gain RAM & CPU) ---
       - bees
       - snapper
@@ -153,11 +159,15 @@ modules:
       - yelp
       - bazzite-updater
 
-  # 3. Activation du service démon LACT natif
+  # 3. Services systemd : démon LACT natif + verrouillage de l'administration web Cockpit
   - type: systemd
     system:
       enabled:
         - lactd.service
+      # Masqués même si les paquets sont absents : empêche toute réactivation (ujust, container, layering)
+      masked:
+        - cockpit.socket
+        - cockpit.service
 
   # 4. Exécution du script de debloat complet GNOME & wallpapers
   - type: script

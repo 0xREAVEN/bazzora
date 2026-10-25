@@ -85,19 +85,19 @@ Elle fait le pont entre les **optimisations gaming de pointe de Valve et Bazzite
   * Utilitaire de partitionnement complet **GParted** intégré nativement.
   * **ExtensionManager** préinstallé en Flatpak pour choisir librement vos extensions sans dépendances système forcées.
   * Raccourcis pratiques : `Ctrl+Alt+T` (Terminal Ptyxis) et `Ctrl+Maj+Échap` (Mission Center).
-  * Lanceur d'administration épuré : Remplacement du bazzite-updater KDE par le raccourci classique `ujust update` à icône jaune.
+  * Lanceur d'administration épuré : Remplacement du bazzite-updater KDE par le raccourci `ujust bazzora-update` à icône jaune.
 
 ### 🧹 Debloat Chirurgical (Épure maximale pour Tour de Bureau)
 * **Android / Waydroid** : Intégralement purgé avec les bibliothèques de communication inter-processus (`waydroid`, `libgbinder`, `python3-gbinder`).
-* **Services Serveur Cockpit** : Désinstallation des 6 paquets Cockpit et extinction des sockets réseau d'administration web superflus.
-* **Consoles Portables & Laptops** : Suppression des démons pour consoles mobiles (`hhd`, `inputplumber`), utilitaires pour portables Framework (`fw-fanctrl`) et outils mobiles APU (`ryzenadj`).
+* **Services Serveur Cockpit** : Désinstallation des paquets Cockpit et masquage de `cockpit.socket` / `cockpit.service`.
+* **Consoles Portables & Laptops** : Aucun démon de console portable (`hhd`, `inputplumber` absents de la base desktop), suppression des utilitaires pour portables Framework (`fw-fanctrl`) et outils mobiles APU (`ryzenadj`).
 * **Démons Lourds** : Retrait des gestionnaires de snapshots en arrière-plan (`bees`, `snapper`, `btrfs-assistant`) pour libérer immédiatement CPU et mémoire vive.
 * **Périphériques Non Pertinents** : Suppression des firmwares et pilotes non-AMD (firmwares Intel/Nvidia et pilotes multimédias), des agents de virtualisation (QEMU, VMware, VirtualBox, Hyper-V, Spice) et des modules akmod de volants de simulation.
 
 ### 🐚 Environnement Shell & Terminal
-* **Shell Fish & Prompt Starship** : Prêts à l'emploi avec prise en charge des polices Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`).
+* **Shell Bash, bash-completion & Prompt Starship** : Prêts à l'emploi avec prise en charge des polices Nerd Fonts (`FiraCode`, `JetBrainsMono`, `Hack`).
 * **Fastfetch** : Configuration élégante présentant l'état complet du processeur Ryzen et de la carte Radeon.
-* **Initialisation Automatisée** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Configure instantanément le profil Ptyxis sur Fish sans bloquer l'appel `chsh`.
+* **Initialisation Automatisée** ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)) : Applique les configurations Bazzora et remet le profil Ptyxis sur le shell de connexion (Bash).
 
 ---
 
@@ -116,7 +116,7 @@ ujust toggle-proton-hdr
 ujust toggle-fsr4
 
 # Mettre à jour l'ensemble du système (OSTree, Flatpaks, conteneurs et brew en parallèle)
-ujust update
+ujust bazzora-update
 
 # Gérer l'installation automatique des Flatpaks au démarrage (pour stopper les notifications)
 ujust toggle-flatpak-setup

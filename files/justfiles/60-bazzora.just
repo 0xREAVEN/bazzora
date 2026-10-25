@@ -2,7 +2,66 @@
 # 🚀 SYSTEM & UPDATES
 # ==================================================
 
+# Mise à jour unifiée en parallèle : image système, Flatpaks, Homebrew et conteneurs Distrobox
+# (nommée bazzora-update pour ne pas entrer en conflit avec « ujust update » de Bazzite)
+[group("system")]
+bazzora-update:
+    #!/usr/bin/bash
+    set -uo pipefail
+    LOGDIR=$(mktemp -d -t bazzora-update.XXXXXX)
+    echo -e "\033[1m🔄 Mise à jour unifiée Bazzora\033[0m"
+    echo "Journaux détaillés : $LOGDIR"
+    sudo -v || { echo "Authentification refusée."; exit 1; }
+    # Maintient le ticket sudo valide pendant les tâches longues
+    ( while true; do sudo -n true; sleep 50; done ) 2>/dev/null &
+    KEEPALIVE=$!
+    trap 'kill "$KEEPALIVE" 2>/dev/null' EXIT
+
+    BREW=""
+    if command -v brew >/dev/null 2>&1; then BREW=$(command -v brew)
+    elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then BREW=/home/linuxbrew/.linuxbrew/bin/brew; fi
+
+    declare -A PIDS
+    lancer() {
+        local nom=$1; shift
+        ( "$@" ) >"$LOGDIR/$nom.log" 2>&1 &
+        PIDS[$nom]=$!
+        echo "  ▶ $nom"
+    }
+
+    lancer systeme sudo rpm-ostree upgrade
+    lancer flatpak-systeme sudo flatpak update -y --system --noninteractive
+    lancer flatpak-utilisateur flatpak update -y --user --noninteractive
+    [ -n "$BREW" ] && lancer homebrew bash -c "\"$BREW\" update && \"$BREW\" upgrade"
+    command -v distrobox >/dev/null 2>&1 && lancer distrobox distrobox upgrade --all
+
+    ECHECS=0
+    for nom in "${!PIDS[@]}"; do
+        if wait "${PIDS[$nom]}"; then
+            echo -e "  ✅ $nom"
+        else
+            echo -e "  ❌ \033[31m$nom\033[0m (voir $LOGDIR/$nom.log)"
+            ECHECS=$((ECHECS + 1))
+        fi
+    done
+
+    # Nettoyage des runtimes Flatpak orphelins, une fois toutes les mises à jour terminées
+    sudo flatpak uninstall --unused -y --system --noninteractive >/dev/null 2>&1 || true
+    flatpak uninstall --unused -y --user --noninteractive >/dev/null 2>&1 || true
+
+    rpm-ostree status --pending-exit-77 >/dev/null 2>&1
+    if [ $? -eq 77 ]; then
+        echo -e "\n🔁 \033[1mNouvelle image système installée : redémarrez pour l'appliquer.\033[0m"
+    fi
+    if [ "$ECHECS" -eq 0 ]; then
+        echo -e "\n🎉 \033[32mTout est à jour.\033[0m"
+    else
+        echo -e "\n⚠️  \033[33m$ECHECS tâche(s) en échec.\033[0m"
+        exit 1
+    fi
+
 # Ouverture et fermeture des ports pour GSConnect
+[group("system")]
 setup-gsconnect:
     #!/usr/bin/bash
     set -euo pipefail
@@ -24,12 +83,13 @@ setup-gsconnect:
         *) echo "Action annulée." ;;
     esac
 
-# Restaure les configurations du système (/etc/skel), Fish et le terminal Ptyxis
+# Restaure les configurations du système (/etc/skel), Bash et le terminal Ptyxis
+[group("system")]
 restore-skel:
     #!/usr/bin/bash
     set -euo pipefail
     echo -e "\033[1mInitialisation des configurations Bazzora (/etc/skel)\033[0m"
-    echo "Cette commande déploie vos configurations Fish, Starship, MangoHud et configure Ptyxis."
+    echo "Cette commande déploie vos configurations Bash, Starship, MangoHud et configure Ptyxis."
     echo ""
     read -p "Voulez-vous (M)anquants (copier sans écraser), (E)craser tout, ou (A)nnuler ? " choice
     case "$choice" in
@@ -49,26 +109,24 @@ restore-skel:
             ;;
     esac
 
-    # Configuration automatique de Fish et de Ptyxis
-    if command -v fish >/dev/null 2>&1; then
-        FISH_PATH=$(command -v fish)
-        if [ "$SHELL" != "$FISH_PATH" ]; then
-            echo "🐟 Définition de Fish comme shell par défaut..."
-            chsh -s "$FISH_PATH" || true
-        fi
-        if command -v gsettings >/dev/null 2>&1; then
-            PROFILE_ID=$(gsettings get org.gnome.Ptyxis default-profile-uuid 2>/dev/null | tr -d "'" || true)
-            if [ -n "$PROFILE_ID" ]; then
-                echo "💻 Configuration automatique du profil Ptyxis pour Fish..."
-                gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ use-custom-command true 2>/dev/null || true
-                gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/ custom-command "$FISH_PATH" 2>/dev/null || true
-            fi
-            echo "🎨 Application des thèmes Bazzora (Bibata Modern Ice & Papirus-Dark)..."
-            gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
-            gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
-        fi
-        echo -e "🎉 \033[32mFish, Starship et les thèmes sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
+    # Bash comme shell de connexion (Fish n'est plus fourni par l'image)
+    LOGIN_SHELL=$(getent passwd "$USER" | cut -d: -f7)
+    if [ "$LOGIN_SHELL" != "/bin/bash" ] && [ "$LOGIN_SHELL" != "/usr/bin/bash" ]; then
+        echo "🐚 Définition de Bash comme shell par défaut..."
+        # chsh absent de Bazzite (util-linux-user non fourni) : usermod depuis shadow-utils
+        sudo usermod --shell /bin/bash "$USER" || true
     fi
+    if command -v gsettings >/dev/null 2>&1; then
+        PROFILE_ID=$(gsettings get org.gnome.Ptyxis default-profile-uuid 2>/dev/null | tr -d "'" || true)
+        if [ -n "$PROFILE_ID" ]; then
+            echo "💻 Ptyxis : utilisation du shell de connexion (Bash)..."
+            gsettings set "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/" use-custom-command false 2>/dev/null || true
+        fi
+        echo "🎨 Application des thèmes Bazzora (Bibata Modern Ice & Papirus-Dark)..."
+        gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
+    fi
+    echo -e "🎉 \033[32mBash, Starship et les thèmes sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
 
 # Activer ou désactiver l'installation automatique des Flatpaks au démarrage (pour éviter le spam de notifications). Options: status | enable | disable
 [group("system")]
@@ -76,7 +134,9 @@ toggle-flatpak-setup ACTION="":
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
     
+    # Timers installés par le module BlueBuild default-flatpaks (v2)
     SERVICE="system-flatpak-setup.timer"
+    USER_SERVICE="user-flatpak-setup.timer"
     
     if systemctl is-enabled --quiet "$SERVICE" 2>/dev/null; then
         STATUS="Enabled"
@@ -115,18 +175,15 @@ toggle-flatpak-setup ACTION="":
     case "${OPTION}" in
         "Désactiver le service (Recommandé)"|"disable")
             echo "Désactivation de l'installation automatique des Flatpaks..."
-            if command -v bluebuild-flatpak-manager >/dev/null 2>&1; then
-                bluebuild-flatpak-manager disable 2>/dev/null || true
-            fi
-            sudo systemctl disable --now "$SERVICE" default-flatpaks-system.service default-flatpaks-user.service 2>/dev/null || true
+            sudo systemctl disable --now "$SERVICE"
+            sudo systemctl disable --global "$USER_SERVICE"
+            systemctl --user disable --now "$USER_SERVICE" 2>/dev/null || true
             echo -e "${yellow}${bold}Désactivé !${normal} L'installation automatique est désactivée au démarrage."
             ;;
         "Activer le service"|"enable")
             echo "Activation de l'installation automatique des Flatpaks..."
-            if command -v bluebuild-flatpak-manager >/dev/null 2>&1; then
-                bluebuild-flatpak-manager enable 2>/dev/null || true
-            fi
-            sudo systemctl enable --now "$SERVICE" 2>/dev/null || true
+            sudo systemctl enable --now "$SERVICE"
+            sudo systemctl enable --global "$USER_SERVICE"
             echo -e "${green}${bold}Activé !${normal} Le service se lancera au prochain démarrage."
             ;;
         *)
@@ -248,6 +305,7 @@ toggle-amdgpu-overdrive:
 # ==================================================
 
 # Installe le wrapper bbrew
+[group("brew")]
 setup-brew:
     #!/usr/bin/bash
     set -euo pipefail
@@ -259,8 +317,10 @@ setup-brew:
     echo "Ferme ce terminal et ouvres-en un nouveau pour utiliser la commande 'bbrew'."
 
 # Gérer Visual Studio Code (usage: ujust manage-vscode install/uninstall)
+[group("brew")]
 manage-vscode action="install":
     #!/usr/bin/bash
+    set -euo pipefail
     if [ "{{action}}" == "install" ]; then
         echo "--- Installation de VS Code via Homebrew ---"
         brew tap ublue-os/tap
