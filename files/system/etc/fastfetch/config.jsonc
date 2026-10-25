@@ -20,7 +20,7 @@
         {
             "type": "os",
             "key": " 󰣛",
-            "format": "{pretty-name}"
+            "format": "Bazzora ({pretty-name} {version-id})"
         },
         {
             "type": "kernel",
@@ -42,7 +42,14 @@
         },
         {
             "type": "gpu",
-            "key": " 󰍛"
+            "key": " 󰍛",
+            "hideType": "integrated",
+            "format": "{name} [{driver}]"
+        },
+        {
+            "type": "command",
+            "key": " 󰾲",
+            "text": "v=$(rpm -q --qf '%{VERSION}\\n' mesa-vulkan-drivers 2>/dev/null | head -n1) && [ -n \"$v\" ] && echo \"Mesa $v (RADV)\" || echo 'Mesa inconnu'"
         },
         {
             "type": "memory",
@@ -56,10 +63,6 @@
         {
             "type": "display",
             "key": " 󰍹"
-        },
-        {
-            "type": "battery",
-            "key": " "
         },
         {
             "type": "gamepad",

@@ -4,7 +4,10 @@ set -oue pipefail
 echo "=== Début du nettoyage complet de Bazzite (Debloat Bazzora) ==="
 
 echo "1. Nettoyage ciblé des extensions GNOME préinstallées..."
-# On conserve uniquement AppIndicator (systray Steam/Heroic) et GSConnect
+# On conserve uniquement AppIndicator (systray Steam/Heroic) et GSConnect.
+# Les extensions de Bazzite (compiz, magic-lamp, logomenu, hotedge, blur-my-shell…) ne sont
+# rattachées à aucun RPM : la suppression des fichiers est donc la seule méthode possible.
+# Les extensions paquetées (user-theme) sont retirées proprement via le module rpm-ostree.
 if [ -d /usr/share/gnome-shell/extensions ]; then
     find /usr/share/gnome-shell/extensions/ -mindepth 1 -maxdepth 1 -type d \
         ! -name "appindicatorsupport@rgcjonas.gmail.com" \
@@ -30,36 +33,25 @@ EOF
 # Override des dossiers d'applications GNOME (suppression du dossier Waydroid)
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-02-bazzora-folders.gschema.override
 [org.gnome.desktop.app-folders]
-folder-children=['Games', 'GamingUtilities', 'Utilities', 'Containers', 'Wine', 'YaST', 'Pardus']
+folder-children=['Games', 'GamingUtilities', 'Utilities', 'Containers', 'Wine']
 EOF
 
-# Installation et configuration du thème de curseur Bibata Modern Ice
-echo "Configuration du thème de curseur Bibata Modern Ice..."
-mkdir -p /usr/share/icons/default
-curl -fSsL --retry 3 "https://github.com/ful1e5/Bibata_Cursor/releases/latest/download/Bibata-Modern-Ice.tar.xz" | tar -xJ -C /usr/share/icons/ 2>/dev/null || true
-chmod -R 755 /usr/share/icons/Bibata-Modern-Ice 2>/dev/null || true
-
-cat << 'EOF' > /usr/share/icons/default/index.theme
-[Icon Theme]
-Name=Default
-Comment=Default Cursor Theme
-Inherits=Bibata-Modern-Ice
-EOF
-chmod 644 /usr/share/icons/default/index.theme
-
-# Configuration de l'accès aux thèmes d'icônes et curseurs pour Flatpak
-echo "Configuration de l'accès aux icônes et curseurs pour les applications Flatpak..."
-mkdir -p /var/lib/flatpak/overrides
-flatpak override --system --filesystem=/usr/share/icons:ro --env=XCURSOR_PATH=/run/host/usr/share/icons 2>/dev/null || true
-if [ ! -f "/var/lib/flatpak/overrides/global" ]; then
-    cat << 'EOF' > /var/lib/flatpak/overrides/global
-[Context]
-filesystems=/usr/share/icons:ro;
-
-[Environment]
-XCURSOR_PATH=/run/host/usr/share/icons
-EOF
-fi
+# Installation du thème de curseur Bibata Modern Ice (version figée + empreinte vérifiée).
+# Un téléchargement corrompu ou modifié fait échouer le build : l'image précédente reste en ligne.
+# Pour mettre à jour : changer la version ET l'empreinte sha256 ensemble.
+BIBATA_VERSION="v2.0.7"
+BIBATA_SHA256="a68cae60c4dc706350e194ebc91c5fe48bc7bc9d59e119555834a2a7ee5078ef"
+echo "Installation du curseur Bibata Modern Ice ${BIBATA_VERSION}..."
+BIBATA_TMP="$(mktemp)"
+curl -fsSL --retry 3 -o "$BIBATA_TMP" \
+    "https://github.com/ful1e5/Bibata_Cursor/releases/download/${BIBATA_VERSION}/Bibata-Modern-Ice.tar.xz"
+echo "${BIBATA_SHA256}  ${BIBATA_TMP}" | sha256sum -c -
+tar -xJf "$BIBATA_TMP" -C /usr/share/icons/
+rm -f "$BIBATA_TMP"
+test -f /usr/share/icons/Bibata-Modern-Ice/index.theme
+chmod -R u=rwX,go=rX /usr/share/icons/Bibata-Modern-Ice
+# /usr/share/icons/default/index.theme est fourni par le module files (files/system)
+# Les overrides Flatpak globaux sont déployés au démarrage via tmpfiles.d (voir bazzora-flatpak.conf)
 
 # Création de l'override de thème et d'optimisations Mutter Gaming Bazzora
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-04-bazzora-theme.gschema.override
@@ -138,13 +130,8 @@ apps=['com.github.Matoking.protontricks.desktop', 'discover_overlay_configure.de
 name='Gaming Utilities'
 translate=false
 
-[org/gnome/desktop/app-folders/folders/Pardus]
-categories=['X-Pardus-Apps']
-name='X-Pardus-Apps.directory'
-translate=true
-
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['system-update.desktop', 'tuned-gui.desktop', 'rog-control-center.desktop', 'fish.desktop', 'nvtop.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'gparted.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
+apps=['system-update.desktop', 'tuned-gui.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'gparted.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
@@ -154,11 +141,6 @@ apps=['io.github.dvlv.boxbuddyrs.desktop', 'com.ranfdev.DistroShelf.desktop', 'i
 categories=['Distrobox']
 name='Containers'
 translate=false
-
-[org/gnome/desktop/app-folders/folders/YaST]
-categories=['X-SuSE-YaST']
-name='suse-yast.directory'
-translate=true
 
 [org/gnome/desktop/app-folders/folders/Wine]
 apps=['winetricks.desktop']
@@ -181,10 +163,9 @@ rm -rf /usr/share/ublue-os/dconfs/desktop-silverblue/* 2>/dev/null || true
 echo "4. Nettoyage de l'autostart et des alias de shell..."
 rm -f /etc/skel/.config/autostart/bazzite-portal.desktop
 rm -f /etc/profile.d/bazzite-neofetch.sh
-rm -f /usr/share/fish/vendor_conf.d/bazzite-neofetch.fish
 
-# Configuration de Fish comme shell par défaut pour les futurs utilisateurs
-sed -i 's|SHELL=/bin/bash|SHELL=/usr/bin/fish|' /etc/default/useradd 2>/dev/null || true
+# Bash reste le shell par défaut des nouveaux utilisateurs (Fish est retiré de l'image)
+sed -i 's|^SHELL=.*|SHELL=/bin/bash|' /etc/default/useradd 2>/dev/null || true
 
 echo "5. Suppression des fonds d'écran et branding Bazzite/Steam Deck..."
 rm -rf /usr/share/wallpapers/*
@@ -234,8 +215,5 @@ rm -f /usr/share/applications/btrfs-assistant.desktop
 rm -f /usr/share/applications/orca.desktop
 rm -f /etc/xdg/autostart/orca-autostart.desktop
 rm -f /usr/share/applications/io.github.rfrench3.bazzite-updater.desktop
-
-echo "8. Configuration des services système..."
-systemctl enable lactd.service 2>/dev/null || true
 
 echo "=== Debloat Bazzora terminé avec succès ==="
