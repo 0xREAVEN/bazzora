@@ -225,13 +225,7 @@ clean-bazzora:
 # 🎮 GAMING & HDR
 # ==================================================
 
-# Délègue à « ujust global-fsr4 » de Bazzite (même fichier, gestion des versions de Proton à jour).
-# Force l'upscaling FSR 4 (RDNA 4) sur les jeux FSR 3.1+ sous Proton. Options : enable | disable
-[group("gaming")]
-toggle-fsr4 ACTION="":
-    #!/usr/bin/bash
-    set -euo pipefail
-    ujust global-fsr4 {{ ACTION }}
+# FSR 4 global (RDNA 4) : fourni par Bazzite, « ujust global-fsr4 » (alias toggle-global-fsr4).
 
 # Active/Désactive le HDR et Wayland natif sous Proton (sans Gamescope) ou affiche les Nits EDID de l'écran
 [group("gaming")]
@@ -273,26 +267,52 @@ toggle-proton-hdr:
 toggle-amdgpu-overdrive:
     #!/usr/bin/bash
     source /usr/lib/ujust/ujust.sh
-    if rpm-ostree kargs | grep -q "amdgpu.ppfeaturemask=0xffffffff"; then
+    # Même méthode que bazzite-hardware-setup : seul le bit overdrive (0x4000) est ajouté
+    # au masque du pilote, les autres fonctions PowerPlay gardent leur état par défaut.
+    PARAM=/sys/module/amdgpu/parameters/ppfeaturemask
+    if [ ! -r "$PARAM" ]; then
+        echo "Pilote amdgpu non chargé : aucune carte AMD à configurer."
+        exit 1
+    fi
+    MASQUE=$(( $(cat "$PARAM") ))
+    KARG=$(rpm-ostree kargs | grep -oE 'amdgpu\.ppfeaturemask=[^ ]+' | head -n1 || true)
+    if (( MASQUE & 0x4000 )); then
         STATUS="${green}${bold}Activé${normal}"
     else
         STATUS="${yellow}${bold}Désactivé${normal}"
     fi
-    echo -e "État actuel de l'overdrive AMD GPU : $STATUS"
+    echo -e "État actuel de l'overdrive AMD GPU : $STATUS (masque $(printf '0x%x' "$MASQUE"))"
     echo "Nécessaire pour permettre à LACT ou CoreCtrl de modifier les fréquences,"
     echo "les tensions (undervolt) et les courbes de ventilation personnalisées."
+    if [ "$KARG" = "amdgpu.ppfeaturemask=0xffffffff" ]; then
+        echo -e "${yellow}${bold}Ancienne valeur Bazzora${normal} (0xffffffff : tous les bits PowerPlay)."
+        echo "Pour n'activer que l'overdrive : Désactiver, redémarrer, puis Activer."
+    fi
     echo ""
-    ACTION=$(ugum choose "Activer l'overdrive (0xffffffff)" "Désactiver l'overdrive" "Annuler")
+    ACTION=$(ugum choose "Activer l'overdrive" "Désactiver l'overdrive" "Annuler")
     case "$ACTION" in
-        "Activer l'overdrive (0xffffffff)")
-            echo "Activation de amdgpu.ppfeaturemask=0xffffffff..."
-            sudo rpm-ostree kargs --append-if-missing="amdgpu.ppfeaturemask=0xffffffff"
-            echo -e "${green}${bold}Activé !${normal} Un redémarrage système est nécessaire pour appliquer."
+        "Activer l'overdrive")
+            if [ -n "$KARG" ]; then
+                ANCIEN=${KARG#*=}
+                if (( ANCIEN & 0x4000 )); then
+                    echo "Overdrive déjà présent dans les arguments du noyau ($KARG)."
+                    exit 0
+                fi
+                NOUVEAU=$(printf '0x%x' $(( ANCIEN | 0x4000 )))
+                sudo rpm-ostree kargs --delete="$KARG" --append="amdgpu.ppfeaturemask=$NOUVEAU"
+            else
+                NOUVEAU=$(printf '0x%x' $(( MASQUE | 0x4000 )))
+                sudo rpm-ostree kargs --append-if-missing="amdgpu.ppfeaturemask=$NOUVEAU"
+            fi
+            echo -e "${green}${bold}Activé !${normal} amdgpu.ppfeaturemask=$NOUVEAU — redémarrez pour appliquer."
             ;;
         "Désactiver l'overdrive")
-            echo "Désactivation de amdgpu.ppfeaturemask..."
-            sudo rpm-ostree kargs --delete-if-present="amdgpu.ppfeaturemask=0xffffffff"
-            echo -e "${yellow}${bold}Désactivé !${normal} Un redémarrage système est nécessaire pour appliquer."
+            if [ -z "$KARG" ]; then
+                echo "Aucun argument amdgpu.ppfeaturemask : rien à retirer."
+                exit 0
+            fi
+            sudo rpm-ostree kargs --delete-if-present="$KARG"
+            echo -e "${yellow}${bold}Désactivé !${normal} $KARG retiré — redémarrez pour appliquer."
             ;;
         *) echo "Aucune modification apportée." ;;
     esac

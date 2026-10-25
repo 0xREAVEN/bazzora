@@ -54,6 +54,8 @@ chmod -R u=rwX,go=rX /usr/share/icons/Bibata-Modern-Ice
 # Les overrides Flatpak globaux sont déployés au démarrage via tmpfiles.d (voir bazzora-flatpak.conf)
 
 # Création de l'override de thème et d'optimisations Mutter Gaming Bazzora
+# check-alive-timeout n'est pas redéfini : la valeur de Bazzite (20 s, zz0-00-bazzite-desktop-silverblue-global)
+# laisse le temps aux écrans de chargement tout en gardant la fenêtre « L'application ne répond pas ».
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-04-bazzora-theme.gschema.override
 [org.gnome.desktop.interface]
 color-scheme='prefer-dark'
@@ -68,7 +70,6 @@ monospace-font-name='Fira Code weight=450 10'
 
 [org.gnome.mutter]
 center-new-windows=true
-check-alive-timeout=0
 experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer', 'xwayland-native-scaling']
 
 [org.gnome.desktop.peripherals.mouse]
@@ -231,6 +232,9 @@ ujust --summary > /dev/null
 echo "6c. Identité de l'image (bannière d'accueil, recettes ujust)..."
 # image-info.json est lu par la bannière et certaines recettes Bazzite :
 # il doit décrire Bazzora et non l'image de base.
+# Effet sur bazzite-hardware-setup : le changement de nom le relance une fois au premier démarrage
+# (il mémorise le nom dans /etc/bazzite/image_name), sans conséquence. Ses tests sur le nom ne
+# visent que « deck » et « dx » : « bazzora » est traité comme une image bureau, comme bazzite-gnome.
 IMAGE_INFO=/usr/share/ublue-os/image-info.json
 if [ -f "$IMAGE_INFO" ]; then
     jq '. + {
@@ -243,6 +247,14 @@ if [ -f "$IMAGE_INFO" ]; then
     mv "${IMAGE_INFO}.tmp" "$IMAGE_INFO"
     chmod 644 "$IMAGE_INFO"
 fi
+
+echo "6d. Profil d'énergie « performance » : profil tuned Bazzora..."
+# Le profil Bazzite hérite de dirty_bytes = 40 % de la RAM, qui écraserait les limites
+# d'écriture de 99-bazzora-gaming.conf : on lui substitue throughput-performance-bazzora.
+PPD=/etc/tuned/ppd.conf
+sed -i 's/^performance=throughput-performance-bazzite$/performance=throughput-performance-bazzora/' "$PPD"
+grep -qx 'performance=throughput-performance-bazzora' "$PPD"
+test -f /usr/lib/tuned/profiles/throughput-performance-bazzite/tuned.conf
 
 echo "7. Suppression des raccourcis d'applications obsolètes ou indésirables..."
 rm -f /usr/share/applications/*waydroid*.desktop /usr/share/applications/Waydroid*.desktop

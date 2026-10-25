@@ -29,6 +29,3 @@ get-decky-bazzite-buddy
 get-decky-lossless-scaling
 get-framegen
 restore-input-remapper
-
-# --- En conflit avec Bazzora (watchdog AMD désactivé via modprobe.d) ---
-configure-watchdog

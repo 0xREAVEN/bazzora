@@ -60,7 +60,7 @@ section "2. Commandes ujust"
 if dans_image ujust --summary >/tmp/ujust.txt 2>&1; then
     ok "le justfile ujust complet se charge (aucune recette en double)"
     for recette in bazzora-update bazzora-doctor restore-skel setup-gsconnect manage-vscode \
-                   toggle-amdgpu-overdrive toggle-fsr4 toggle-proton-hdr \
+                   toggle-amdgpu-overdrive global-fsr4 toggle-proton-hdr \
                    toggle-flatpak-setup clean-bazzora setup-brew; do
         if tr ' ' '\n' </tmp/ujust.txt | grep -qx "$recette"; then
             ok "recette ujust présente : $recette"
@@ -130,7 +130,6 @@ section "5. Fichiers de configuration"
 for fichier in \
     /etc/environment.d/10-amd-gaming.conf \
     /etc/sysctl.d/99-bazzora-gaming.conf \
-    /etc/modules-load.d/bazzora-bbr.conf \
     /etc/tmpfiles.d/bazzora-flatpak.conf \
     /etc/tmpfiles.d/bazzora-thp.conf \
     /etc/profile.d/bazzora-firstrun.sh \
@@ -143,17 +142,25 @@ for fichier in \
     /usr/libexec/bazzora/pin-deployment \
     /usr/libexec/bazzora/doctor \
     /usr/share/bazzora/ujust-masked.list \
+    /usr/lib/tuned/profiles/throughput-performance-bazzora/tuned.conf \
     /usr/share/ublue-os/motd/tips/20-bazzora.md; do
     if dans_image test -s "$fichier"; then ok "$fichier"; else ko "$fichier manquant ou vide"; fi
 done
 
-for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1; do
+for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1 PROTON_USE_NTSYNC=1; do
     if dans_image grep -qx "$variable" /etc/environment.d/10-amd-gaming.conf; then
         ok "variable $variable"
     else
         ko "variable $variable absente"
     fi
 done
+
+# Mode « performance » : profil tuned Bazzora (garde les limites dirty_bytes de Bazzora)
+if dans_image grep -qx 'performance=throughput-performance-bazzora' /etc/tuned/ppd.conf; then
+    ok "ppd.conf : performance → throughput-performance-bazzora"
+else
+    ko "ppd.conf : le mode performance n'utilise pas le profil tuned Bazzora"
+fi
 
 for script in pin-deployment doctor; do
     if dans_image test -x "/usr/libexec/bazzora/$script"; then
