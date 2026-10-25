@@ -3,6 +3,11 @@ description: Image Bazzite-GNOME debloatée et optimisée pour PC Gaming Full AM
 base-image: ghcr.io/ublue-os/bazzite-gnome
 image-version: latest
 
+# Les builds sont publiés sous le tag « candidate » uniquement.
+# Le workflow CI les teste, puis promeut l'image validée en « latest » (voir .github/workflows/build.yml).
+alt-tags:
+  - candidate
+
 modules:
   # 1. Copie des configurations et fichiers personnalisés (/etc, /usr, environment.d, etc.)
   - type: files

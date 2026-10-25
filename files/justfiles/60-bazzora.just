@@ -29,6 +29,11 @@ bazzora-update:
         echo "  ▶ $nom"
     }
 
+    # Version de secours : épingle le déploiement actuel (il fonctionne, on l'utilise) avant toute mise à jour
+    if [ -x /usr/libexec/bazzora/pin-deployment ]; then
+        sudo /usr/libexec/bazzora/pin-deployment || echo "⚠️  Épinglage impossible, la mise à jour continue."
+    fi
+
     lancer systeme sudo rpm-ostree upgrade
     lancer flatpak-systeme sudo flatpak update -y --system --noninteractive
     lancer flatpak-utilisateur flatpak update -y --user --noninteractive

@@ -197,6 +197,17 @@ Si une mise à jour distante pose problème, revenez immédiatement à l'état p
   ```
 * **Depuis le menu de démarrage GRUB :** Sélectionnez la ligne correspondant au déploiement antérieur pour démarrer sur votre ancien système intact.
 
+### Version de secours épinglée
+Avant chaque mise à jour, `ujust bazzora-update` **épingle le déploiement en cours** (celui qui fonctionne).
+Il reste disponible au menu de démarrage même après plusieurs mises à jour ratées d'affilée.
+Une seule épingle Bazzora existe à la fois, et vos épingles manuelles (`ostree admin pin`) ne sont jamais modifiées.
+
+### Publication testée
+Chaque build est d'abord publié sous le tag `candidate`, puis soumis à des tests automatiques :
+conformité `bootc`, chargement de `ujust`, paquets retirés ou ajoutés, services (LACT, Cockpit masqué),
+configurations, schémas GSettings et signature Cosign. L'image ne devient `latest` que si **tous** les tests passent.
+Sinon, vous restez sur la dernière version validée.
+
 ### Vérification de la signature Cosign
 Vérifiez l'authenticité et l'intégrité de l'image grâce à la clé publique :
 ```bash
