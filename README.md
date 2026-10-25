@@ -197,6 +197,17 @@ If any upstream update introduces an issue, roll back instantly:
   ```
 * **From the GRUB boot menu:** Select the previous deployment entry to boot directly into your prior working state.
 
+### Pinned Fallback Deployment
+Before every update, `ujust bazzora-update` **pins the currently booted deployment** (the one that works).
+It stays available in the boot menu even after several failed updates in a row.
+Only one Bazzora pin exists at a time, and your manual pins (`ostree admin pin`) are never touched.
+
+### Tested Releases
+Every build is first published under the `candidate` tag, then goes through automated tests:
+`bootc` compliance, `ujust` loading, removed/added packages, services (LACT, masked Cockpit),
+configuration files, GSettings schemas and Cosign signature. The image only becomes `latest` if **all** tests pass.
+Otherwise you stay on the last validated release.
+
 ### Image Signature Verification
 Verify image authenticity and integrity using Cosign and the public key:
 ```bash

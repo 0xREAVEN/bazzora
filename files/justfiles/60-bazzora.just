@@ -2,8 +2,9 @@
 # 🚀 SYSTEM & UPDATES
 # ==================================================
 
-# Mise à jour unifiée en parallèle : image système, Flatpaks, Homebrew et conteneurs Distrobox
-# (nommée bazzora-update pour ne pas entrer en conflit avec « ujust update » de Bazzite)
+# Nommée bazzora-update pour ne pas entrer en conflit avec « ujust update » de Bazzite.
+# (ujust affiche la dernière ligne de commentaire comme description)
+# Mise à jour unifiée en parallèle (système, Flatpaks, Homebrew, Distrobox) avec version de secours épinglée
 [group("system")]
 bazzora-update:
     #!/usr/bin/bash
@@ -28,6 +29,11 @@ bazzora-update:
         PIDS[$nom]=$!
         echo "  ▶ $nom"
     }
+
+    # Version de secours : épingle le déploiement actuel (il fonctionne, on l'utilise) avant toute mise à jour
+    if [ -x /usr/libexec/bazzora/pin-deployment ]; then
+        sudo /usr/libexec/bazzora/pin-deployment || echo "⚠️  Épinglage impossible, la mise à jour continue."
+    fi
 
     lancer systeme sudo rpm-ostree upgrade
     lancer flatpak-systeme sudo flatpak update -y --system --noninteractive

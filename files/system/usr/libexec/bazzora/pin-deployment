@@ -1,0 +1,57 @@
+#!/usr/bin/bash
+# =============================================================================
+# Bazzora — épinglage du déploiement en cours d'exécution
+#
+# Appelé par « ujust bazzora-update » avant chaque mise à jour système.
+# Le déploiement démarré est forcément fonctionnel (on est en train de l'utiliser) :
+# on l'épingle pour qu'il reste toujours disponible au menu de démarrage, même
+# après plusieurs mises à jour ratées d'affilée.
+#
+# Une seule épingle « Bazzora » existe à la fois : l'ancienne est retirée pour ne
+# pas accumuler de déploiements sur le disque. Les épingles posées à la main
+# (ostree admin pin) ne sont jamais touchées.
+# =============================================================================
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo "$0" "$@"
+fi
+
+ETAT_DIR=/var/lib/bazzora
+ETAT="$ETAT_DIR/pinned-deployment"
+mkdir -p "$ETAT_DIR"
+
+JSON=$(rpm-ostree status --json)
+BOOTED_SUM=$(jq -r '.deployments[] | select(.booted) | .checksum' <<<"$JSON")
+BOOTED_PINNED=$(jq -r '.deployments[] | select(.booted) | .pinned' <<<"$JSON")
+
+if [ -z "$BOOTED_SUM" ]; then
+    echo "pin-deployment : déploiement démarré introuvable, rien à faire." >&2
+    exit 0
+fi
+
+# Retire l'épingle Bazzora précédente si elle vise un autre déploiement
+if [ -s "$ETAT" ]; then
+    ANCIEN_SUM=$(<"$ETAT")
+    if [ "$ANCIEN_SUM" != "$BOOTED_SUM" ]; then
+        # L'index ostree suit l'ordre de la liste rpm-ostree
+        ANCIEN_IDX=$(jq --arg c "$ANCIEN_SUM" \
+            '[.deployments[].checksum] | index($c) // empty' <<<"$JSON")
+        if [ -n "$ANCIEN_IDX" ]; then
+            ostree admin pin --unpin "$ANCIEN_IDX" >/dev/null
+            echo "📌 Ancienne épingle retirée (${ANCIEN_SUM:0:12})"
+        fi
+    fi
+fi
+
+if [ "$BOOTED_PINNED" != "true" ]; then
+    ostree admin pin booted >/dev/null
+    echo "$BOOTED_SUM" >"$ETAT"
+    echo "📌 Déploiement actuel épinglé comme version de secours (${BOOTED_SUM:0:12})"
+elif [ -s "$ETAT" ] && [ "$(<"$ETAT")" = "$BOOTED_SUM" ]; then
+    echo "📌 Déploiement actuel déjà épinglé par Bazzora (${BOOTED_SUM:0:12})"
+else
+    # Épingle posée à la main : on la laisse à l'utilisateur et on ne la suivra pas
+    rm -f "$ETAT"
+    echo "📌 Déploiement actuel déjà épinglé manuellement (${BOOTED_SUM:0:12})"
+fi
