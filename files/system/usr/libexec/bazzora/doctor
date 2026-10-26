@@ -60,7 +60,11 @@ fi
 MESA=$(rpm -q --qf '%{VERSION}\n' mesa-vulkan-drivers 2>/dev/null | head -n1)
 [ -n "$MESA" ] && ok "Mesa $MESA (RADV)" || ko "mesa-vulkan-drivers absent"
 
+# Bit overdrive (0x4000) du masque PowerPlay effectivement chargé par le pilote
+MASQUE=$(cat /sys/module/amdgpu/parameters/ppfeaturemask 2>/dev/null || echo 0)
 if grep -q "amdgpu.ppfeaturemask=0xffffffff" /proc/cmdline; then
+    warn "Overdrive AMD via 0xffffffff (tous les bits PowerPlay) : « ujust toggle-amdgpu-overdrive » pour n'activer que l'overdrive"
+elif (( MASQUE & 0x4000 )); then
     ok "Overdrive AMD actif (undervolt / ventilateurs pilotables dans LACT)"
 else
     warn "Overdrive AMD inactif (optionnel : « ujust toggle-amdgpu-overdrive »)"
@@ -95,7 +99,7 @@ ok "Cache de shaders Mesa utilisé : ${CACHE:-vide} (limite 50 Go)"
 if [ -f "$HOME/.config/environment.d/99-proton-fsr4.conf" ]; then
     ok "FSR 4 global activé"
 else
-    warn "FSR 4 global désactivé (optionnel : « ujust toggle-fsr4 »)"
+    warn "FSR 4 global désactivé (optionnel, RDNA 4 : « ujust global-fsr4 »)"
 fi
 
 VRR=$(gsettings get org.gnome.mutter experimental-features 2>/dev/null || true)
@@ -111,6 +115,14 @@ if command -v powerprofilesctl >/dev/null 2>&1; then
         performance) ok "Profil d'énergie : performance" ;;
         *) warn "Profil d'énergie : $PROFIL (« performance » est préférable pendant les sessions de jeu)" ;;
     esac
+fi
+
+# Limites d'écriture disque de 99-bazzora-gaming.conf, y compris en mode « performance » (profil tuned Bazzora)
+DIRTY=$(sysctl -n vm.dirty_bytes 2>/dev/null || true)
+if [ "$DIRTY" = "268435456" ]; then
+    ok "Cache d'écriture disque : 256 Mo (vm.dirty_bytes)"
+else
+    warn "vm.dirty_bytes = ${DIRTY:-inconnu} (256 Mo attendus ; profil tuned actif : $(tuned-adm active 2>/dev/null | sed 's/.*: //' || echo inconnu))"
 fi
 
 # -----------------------------------------------------------------------------

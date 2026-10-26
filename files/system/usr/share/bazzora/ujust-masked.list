@@ -3,20 +3,19 @@
 # Une recette par ligne ; les lignes vides et les commentaires sont ignorés.
 # Utilisé par files/scripts/debloat.sh (build) et .github/scripts/test-image.sh (CI).
 
-# --- Paquets retirés par le debloat (recettes cassées) ---
-cec-mode
-cec-sleep
-configure-broadcom-wl
-configure-snapshots
-enable-framework-fan-control
-install-displaylink
+# --- Paquet retiré par le debloat (recette cassée) ---
 add-updater-to-steam
 
 # --- Matériel non AMD ---
 toggle-nvk
 toggle-i915-sleep-fix
 
+# --- TV HDMI-CEC ---
+cec-mode
+cec-sleep
+
 # --- Laptops / Framework / ROG ---
+enable-framework-fan-control
 enable-framework-automount
 disable-framework-automount
 asus
@@ -29,6 +28,3 @@ get-decky-bazzite-buddy
 get-decky-lossless-scaling
 get-framegen
 restore-input-remapper
-
-# --- En conflit avec Bazzora (watchdog AMD désactivé via modprobe.d) ---
-configure-watchdog

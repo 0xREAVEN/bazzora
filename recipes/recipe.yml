@@ -15,7 +15,7 @@ modules:
       - source: system
         destination: /
 
-  # 2. Gestion des paquets RPM (Ajout de Starship, LACT, GParted, Papirus et suppression bloat)
+  # 2. Paquets RPM : ajout de Starship, LACT, GParted, Papirus ; retrait ciblé
   - type: rpm-ostree
     repos:
       - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-%OS_VERSION%/atim-starship-fedora-%OS_VERSION%.repo
@@ -26,28 +26,39 @@ modules:
       - gparted
       - papirus-icon-theme
       - gnome-initial-setup
+    # Retrait ciblé : uniquement ce qui tourne, se charge au démarrage ou s'affiche à l'écran
+    # dans Bazzite (vérifié sur bazzite-gnome 44.20261023), plus les firmwares Intel/Nvidia.
+    # Les paquets inertes (pilotes de matériel absent, outils non activés) sont conservés :
+    # chacun retiré ici est un paquet de plus que Bazzite peut renommer et faire échouer le build.
     remove:
-      # --- Émulation Android & Waydroid ---
+      # --- Android / Waydroid (service waydroid-container actif) ---
       - waydroid
       - waydroid-selinux
       - libgbinder
       - python3-gbinder
 
-      # --- Lanceurs non désirés ---
+      # --- Applications visibles non désirées ---
       - lutris
+      - makemkv
+      - webapp-manager
+      - yelp
+      - bazzite-updater
+      # cardwire (gestion multi-GPU, fournit switcheroo-control requis par gnome-shell) est conservé :
+      # le Ryzen 9800X3D a un iGPU en plus de la Radeon. Seule son interface graphique est retirée.
+      - cardwire-gui
 
       # --- Shell Fish (remplacé par Bash + bash-completion + Starship) ---
       - fish
 
-      # --- Extensions GNOME paquetées en RPM (les autres sont retirées par debloat.sh) ---
+      # --- Intégrations Steam Deck et extras GNOME visibles ---
       - gnome-shell-extension-user-theme
+      - steamdeck-gnome-presets
+      - steamdeck-backgrounds
+      - gnome-search-yafti
+      - gnome-rounded-blur
+      - jupiter-sd-mounting-btrfs
 
-      # --- Démons lourds & gestionnaires de snapshots (Gain RAM & CPU) ---
-      - bees
-      - snapper
-      - btrfs-assistant
-
-      # --- Microcodes & Pilotes Intel / Nvidia (Machine 100% AMD) ---
+      # --- Firmwares et pilotes Intel / Nvidia (place disque, machine 100 % AMD) ---
       - nvidia-gpu-firmware
       - intel-gpu-firmware
       - intel-npu-firmware
@@ -57,14 +68,15 @@ modules:
       - intel-gmmlib
       - intel-igc
       - intel-igc-libs
-      - intel-lpmd
       - intel-mediasdk
       - intel-opencl-clang
       - intel-vaapi-driver
       - intel-vpl-gpu-rt
       - libva-intel-media-driver
+      # Service intel_lpmd activé (gestion d'énergie des CPU Intel)
+      - intel-lpmd
 
-      # --- Hyperviseurs & Machines Virtuelles (Inutiles en bare-metal) ---
+      # --- Agents de machines virtuelles (services activés, inutiles en bare-metal) ---
       - open-vm-tools
       - open-vm-tools-desktop
       - virtualbox-guest-additions
@@ -76,50 +88,21 @@ modules:
       - spice-vdagent
       - spice-webdavd
 
-      # --- Matériel non AMD & Spécificités laptop/APU mobile non requises ---
-      - framework-system
-      - fw-ectool
-      - fw-fanctrl
-      - ryzenadj
-      - kmod-system76-driver
-      - kmod-system76-io
+      # --- Modules chargés au démarrage pour du matériel absent ---
       - system76-driver
       - system76-io
+      - kmod-system76-driver
+      - kmod-system76-io
+      - gcadapter_oc
+      - kmod-gcadapter_oc
+      - kvmfr
+      - kmod-kvmfr
 
-      # --- Périphériques Razer, volants de course & matériel exotique ---
+      # --- Périphériques Razer (non utilisés) ---
       - openrazer
       - kmod-openrazer
-      - hid-fanatecff
-      - kmod-hid-fanatecff
-      - hid-fanatecff-akmod-modules
-      - hid-tmff2
-      - kmod-hid-tmff2
-      - hid-tmff2-akmod-modules
-      - t150-driver
-      - kmod-t150-driver
-      - new-lg4ff
-      - kmod-new-lg4ff
-      - new-lg4ff-akmod-modules
-      - oversteer-udev
-      - kmod-evdi
-      - libevdi
-      - kmod-wl
-      - broadcom-wl
-      - b43-fwcutter
-      - b43-openfwwf
-      - kmod-gcadapter_oc
-      - gcadapter_oc
-      - kmod-kvmfr
-      - kvmfr
 
-      # --- Contrôleurs exotiques et TV HDMI-CEC non requis ---
-      - xwiimote-ng
-      - ds-inhibit
-      - linux-cec
-      - inputattach-cec-units
-      - libcec
-
-      # --- Accessibilité, Braille & Synthèse vocale ---
+      # --- Accessibilité, braille et synthèse vocale (non utilisés) ---
       - brltty
       - brlapi
       - python3-brlapi
@@ -127,42 +110,6 @@ modules:
       - espeak-ng
       - speech-dispatcher
       - speech-dispatcher-espeak-ng
-
-      # --- Capteur biométrique (Inutile sur tour de bureau) ---
-      - fprintd
-      - fprintd-pam
-
-      # --- Outils serveurs web Cockpit (inutiles sur PC gamer de bureau) ---
-      - cockpit-bridge
-      - cockpit-system
-      - cockpit-podman
-      - cockpit-networkmanager
-      - cockpit-selinux
-      - cockpit-files
-      - cockpit-storaged
-
-      # --- Ripping multimédia (libbluray conservé car requis par gvfs/Nautilus & FFmpeg) ---
-      - makemkv
-
-      # --- Intégrations Steam Deck, Yafti et presets GNOME superflus ---
-      - steamdeck-gnome-presets
-      - steamdeck-backgrounds
-      - gnome-search-yafti
-      - gnome-rounded-blur
-      - jupiter-sd-mounting-btrfs
-
-      # --- Réalité Virtuelle (VR) & Capture de streaming (openxr-libs conservé pour qt6) ---
-      - openxr
-      - obs-studio-plugin-vkcapture-hook-libs
-
-      # --- Applications & Utilitaires superflus ---
-      - cardwire
-      - cardwire-gui
-      - webapp-manager
-      - cage
-      - gmodpatchtool
-      - yelp
-      - bazzite-updater
 
   # 3. Services systemd : démon LACT natif + verrouillage de l'administration web Cockpit
   - type: systemd
