@@ -102,15 +102,18 @@ else
     warn "FSR 4 global désactivé (optionnel, RDNA 4 : « ujust global-fsr4 »)"
 fi
 
-VRR=$(gsettings get org.gnome.mutter experimental-features 2>/dev/null || true)
-if grep -q variable-refresh-rate <<<"$VRR"; then
-    ok "VRR disponible dans GNOME (à activer par écran dans Paramètres › Écrans)"
+MUTTER=$(gsettings get org.gnome.mutter experimental-features 2>/dev/null || true)
+if grep -q scale-monitor-framebuffer <<<"$MUTTER" && grep -q xwayland-native-scaling <<<"$MUTTER"; then
+    ok "Mutter : mise à l'échelle fractionnaire et XWayland natif actifs (VRR : Paramètres › Écrans)"
 else
-    warn "VRR non activé dans les fonctionnalités expérimentales de Mutter"
+    warn "Fonctionnalités Mutter attendues absentes : ${MUTTER:-inconnu}"
 fi
 
-if command -v powerprofilesctl >/dev/null 2>&1; then
-    PROFIL=$(powerprofilesctl get 2>/dev/null || echo inconnu)
+# Bazzite fournit tuned-ppd (API D-Bus de power-profiles-daemon) mais pas la commande powerprofilesctl
+PROFIL=$(gdbus call --system --dest net.hadess.PowerProfiles --object-path /net/hadess/PowerProfiles \
+    --method org.freedesktop.DBus.Properties.Get net.hadess.PowerProfiles ActiveProfile 2>/dev/null \
+    | grep -oE "'[a-z-]+'" | tr -d "'" || true)
+if [ -n "$PROFIL" ]; then
     case "$PROFIL" in
         performance) ok "Profil d'énergie : performance" ;;
         *) warn "Profil d'énergie : $PROFIL (« performance » est préférable pendant les sessions de jeu)" ;;
@@ -154,11 +157,12 @@ else
     warn "Overrides Flatpak globaux absents (créés au prochain démarrage)"
 fi
 
-LIBRE=$(df -P / 2>/dev/null | awk 'NR==2 {print int($4/1048576)}')
+# / est en lecture seule (composefs) et affiche toujours 0 : l'espace utile est celui de /var
+LIBRE=$(df -P /var 2>/dev/null | awk 'NR==2 {print int($4/1048576)}')
 if [ -n "$LIBRE" ] && [ "$LIBRE" -lt 20 ]; then
-    warn "Espace libre sur / : ${LIBRE} Go (« ujust clean-bazzora » peut en libérer)"
+    warn "Espace libre sur /var : ${LIBRE} Go (« ujust clean-bazzora » peut en libérer)"
 else
-    ok "Espace libre sur / : ${LIBRE:-?} Go"
+    ok "Espace libre sur /var : ${LIBRE:-?} Go"
 fi
 
 # -----------------------------------------------------------------------------
