@@ -222,6 +222,22 @@ fi
 compare_base "schémas GSettings stricts (glib-compile-schemas --strict)" \
     glib-compile-schemas --strict --dry-run /usr/share/glib-2.0/schemas
 
+# Une valeur invalide dans un override est ignorée sans erreur hors mode strict : on lit les valeurs effectives
+lire() { dans_image env GSETTINGS_BACKEND=memory gsettings get "$1" "$2" 2>/dev/null || true; }
+MUTTER=$(lire org.gnome.mutter experimental-features)
+if grep -q scale-monitor-framebuffer <<<"$MUTTER" && grep -q xwayland-native-scaling <<<"$MUTTER"; then
+    ok "Mutter experimental-features : $MUTTER"
+else
+    ko "Mutter experimental-features ignoré ou incomplet : ${MUTTER:-illisible}"
+fi
+for cle in "org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice'" \
+           "org.gnome.desktop.interface icon-theme 'Papirus-Dark'" \
+           "org.gnome.desktop.peripherals.mouse accel-profile 'flat'"; do
+    read -r schema nom attendu <<<"$cle"
+    VALEUR=$(lire "$schema" "$nom")
+    [ "$VALEUR" = "$attendu" ] && ok "$schema $nom = $VALEUR" || ko "$schema $nom = ${VALEUR:-illisible} ($attendu attendu)"
+done
+
 if dans_image python3 -c 'import json; json.load(open("/etc/fastfetch/config.jsonc"))' 2>/dev/null; then
     ok "configuration Fastfetch valide"
 else

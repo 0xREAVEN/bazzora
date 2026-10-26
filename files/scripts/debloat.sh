@@ -70,7 +70,9 @@ monospace-font-name='Fira Code weight=450 10'
 
 [org.gnome.mutter]
 center-new-windows=true
-experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer', 'xwayland-native-scaling']
+# Seules les valeurs listées par Mutter sont acceptées : une valeur inconnue fait ignorer toute la clé.
+# Mutter 50 ne propose plus « variable-refresh-rate » comme fonctionnalité expérimentale.
+experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
 
 [org.gnome.desktop.peripherals.mouse]
 accel-profile='flat'

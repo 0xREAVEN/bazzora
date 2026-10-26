@@ -57,7 +57,7 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 | Réseau | `net.core.default_qdisc = fq` | Pacing des paquets (Fedora utilise `fq_codel`). Complète le BBR de Bazzite, qui ne concerne que le TCP. | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
 | THP | `defrag = defer+madvise`, `max_ptes_none = 409` | Change la politique de défragmentation des huge pages (elles restent en mode `madvise`). | [bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf) |
 | Audio | PipeWire `min-quantum = 256` | Plancher anti-craquements : aucune application ne descend sous 256 échantillons (≈ 5,3 ms à 48 kHz). Le quantum par défaut reste 1024 ; ce n'est pas une baisse de latence. | [10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf) |
-| Mutter | VRR, `scale-monitor-framebuffer`, `xwayland-native-scaling` | Débloque ces fonctions expérimentales ; la VRR s'active ensuite écran par écran dans Paramètres › Écrans. | [debloat.sh](files/scripts/debloat.sh) |
+| Mutter | `scale-monitor-framebuffer`, `xwayland-native-scaling` | Mise à l'échelle fractionnaire et rendu XWayland natif. La VRR n'est plus une fonction expérimentale dans Mutter 50 : elle se règle par écran dans Paramètres › Écrans. | [debloat.sh](files/scripts/debloat.sh) |
 | Souris | `accel-profile = 'flat'` | Pas d'accélération du pointeur. | idem |
 
 ## Retraits
