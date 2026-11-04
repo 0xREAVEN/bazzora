@@ -120,19 +120,38 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Connexion au registre
-        run: echo "${{ github.token }}" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
-
       - name: Promotion de l'image validée
         env:
           DIGEST: ${{ needs.test.outputs.digest }}
           OS_VERSION: ${{ needs.test.outputs.os_version }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           DATE=$(date -u +%Y%m%d)
-          # Copie du manifeste à l'identique : le digest ne change pas, la signature Cosign reste valide
+          REPO="${IMAGE#ghcr.io/}"
+          # Retag direct par l'API du registre : le manifeste validé est republié octet pour octet,
+          # le digest ne change pas et la signature Cosign reste valide. (skopeo copy --preserve-digests
+          # refuse désormais de réécrire l'index OCI qui contient l'attestation de build.)
+          TOKEN=$(curl -fsS -u "${REGISTRY_USER}:${REGISTRY_TOKEN}" \
+            "https://ghcr.io/token?scope=repository:${REPO}:pull,push" | jq -r .token)
+          curl -fsS -D headers.txt -o manifest.json -H "Authorization: Bearer ${TOKEN}" \
+            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+            "https://ghcr.io/v2/${REPO}/manifests/${DIGEST}"
+          TYPE=$(grep -i '^content-type:' headers.txt | cut -d' ' -f2 | tr -d '\r')
+          if [ "sha256:$(sha256sum manifest.json | cut -d' ' -f1)" != "${DIGEST}" ]; then
+            echo "::error::Le manifeste récupéré ne correspond pas au digest validé ${DIGEST}"
+            exit 1
+          fi
           for TAG in latest "${OS_VERSION}" "${DATE}" "${DATE}-${OS_VERSION}"; do
-            skopeo copy --all --preserve-digests "docker://${IMAGE}@${DIGEST}" "docker://${IMAGE}:${TAG}"
+            curl -fsS -X PUT -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: ${TYPE}" \
+              --data-binary @manifest.json "https://ghcr.io/v2/${REPO}/manifests/${TAG}" > /dev/null
+            PUBLIE=$(curl -fsS -I -H "Authorization: Bearer ${TOKEN}" -H "Accept: ${TYPE}" \
+              "https://ghcr.io/v2/${REPO}/manifests/${TAG}" | grep -i '^docker-content-digest:' | cut -d' ' -f2 | tr -d '\r')
+            if [ "${PUBLIE}" != "${DIGEST}" ]; then
+              echo "::error::${IMAGE}:${TAG} pointe sur ${PUBLIE:-rien}, ${DIGEST} attendu"
+              exit 1
+            fi
             echo "✅ ${IMAGE}:${TAG} → ${DIGEST}"
           done
           echo "### 🚀 Image publiée" >> "$GITHUB_STEP_SUMMARY"
