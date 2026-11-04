@@ -40,7 +40,9 @@ jobs:
           package: bazzora
           use-regex: true
           delete-tags: '^([0-9a-f]{7}-|br-|pr-|[0-9]{8}-candidate|candidate).*$'
-          exclude-tags: '^(latest|[0-9]+)$'
+          # Une image publiée garde aussi ses tags de date et de version : elle est conservée ici
+          # et ne sera supprimée qu'à l'étape suivante, après 90 jours.
+          exclude-tags: '^(latest|[0-9-]+)$'
           older-than: 14 days
           dry-run: ${{ env.DRY_RUN }}
 
@@ -49,8 +51,9 @@ jobs:
         with:
           package: bazzora
           use-regex: true
-          delete-tags: '^[0-9]{8}(-[0-9]+)?$'
-          exclude-tags: '^(latest|[0-9]+)$'
+          # Tags de date (« 20261104 », « 20261104-45 ») ; les tags de version (« 45 ») sont exclus
+          delete-tags: '^[0-9-]+$'
+          exclude-tags: '^(latest|[0-9]{2})$'
           older-than: 90 days
           dry-run: ${{ env.DRY_RUN }}
 
