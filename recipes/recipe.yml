@@ -16,100 +16,106 @@ modules:
         destination: /
 
   # 2. Paquets RPM : ajout de Starship, LACT, GParted, Papirus ; retrait ciblé
-  - type: rpm-ostree
+  # Module dnf : depuis Fedora 45, rpm-ostree refuse de s'exécuter pendant un build de conteneur.
+  - type: dnf
     repos:
-      - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-%OS_VERSION%/atim-starship-fedora-%OS_VERSION%.repo
-      - https://copr.fedorainfracloud.org/coprs/ilyaz/LACT/repo/fedora-%OS_VERSION%/ilyaz-LACT-fedora-%OS_VERSION%.repo
+      copr:
+        - atim/starship
+        - ilyaz/LACT
     install:
-      - starship
-      - lact
-      - gparted
-      - papirus-icon-theme
-      - gnome-initial-setup
+      packages:
+        - starship
+        - lact
+        - gparted
+        - papirus-icon-theme
+        - gnome-initial-setup
     # Retrait ciblé : uniquement ce qui tourne, se charge au démarrage ou s'affiche à l'écran
-    # dans Bazzite (vérifié sur bazzite-gnome 44.20261023), plus les firmwares Intel/Nvidia.
+    # dans Bazzite (vérifié sur bazzite-gnome 45.20261104), plus les firmwares Intel/Nvidia.
     # Les paquets inertes (pilotes de matériel absent, outils non activés) sont conservés :
     # chacun retiré ici est un paquet de plus que Bazzite peut renommer et faire échouer le build.
+    # dnf remove retire aussi les paquets qui dépendent d'un paquet listé : la liste a été vérifiée
+    # sur la base RPM de Bazzite (aucun paquet conservé n'en dépend).
     remove:
-      # --- Android / Waydroid (service waydroid-container actif) ---
-      - waydroid
-      - waydroid-selinux
-      - libgbinder
-      - python3-gbinder
+      # Ne retirer que les paquets listés, comme rpm-ostree (pas de nettoyage des dépendances)
+      auto-remove: false
+      packages:
+        # --- Android / Waydroid (service waydroid-container actif) ---
+        - waydroid
+        - waydroid-selinux
+        - libgbinder
+        - python3-gbinder
 
-      # --- Applications visibles non désirées ---
-      - lutris
-      - makemkv
-      - webapp-manager
-      - yelp
-      - bazzite-updater
-      # cardwire (gestion multi-GPU, fournit switcheroo-control requis par gnome-shell) est conservé :
-      # le Ryzen 9800X3D a un iGPU en plus de la Radeon. Seule son interface graphique est retirée.
-      - cardwire-gui
+        # --- Applications visibles non désirées ---
+        - lutris
+        - webapp-manager
+        - yelp
+        - bazzite-updater
+        # cardwire (gestion multi-GPU, fournit switcheroo-control requis par gnome-shell) est conservé :
+        # le Ryzen 9800X3D a un iGPU en plus de la Radeon. Seule son interface graphique est retirée.
+        - cardwire-gui
 
-      # --- Shell Fish (remplacé par Bash + bash-completion + Starship) ---
-      - fish
+        # --- Shell Fish (remplacé par Bash + bash-completion + Starship) ---
+        - fish
 
-      # --- Intégrations Steam Deck et extras GNOME visibles ---
-      - gnome-shell-extension-user-theme
-      - steamdeck-gnome-presets
-      - steamdeck-backgrounds
-      - gnome-search-yafti
-      - gnome-rounded-blur
-      - jupiter-sd-mounting-btrfs
+        # --- Intégrations Steam Deck et extras GNOME visibles ---
+        - gnome-shell-extension-user-theme
+        - steamdeck-gnome-presets
+        - steamdeck-backgrounds
+        - gnome-search-yafti
+        - jupiter-sd-mounting-btrfs
 
-      # --- Firmwares et pilotes Intel / Nvidia (place disque, machine 100 % AMD) ---
-      - nvidia-gpu-firmware
-      - intel-gpu-firmware
-      - intel-npu-firmware
-      - intel-vsc-firmware
-      - intel-audio-firmware
-      - intel-opencl
-      - intel-gmmlib
-      - intel-igc
-      - intel-igc-libs
-      - intel-mediasdk
-      - intel-opencl-clang
-      - intel-vaapi-driver
-      - intel-vpl-gpu-rt
-      - libva-intel-media-driver
-      # Service intel_lpmd activé (gestion d'énergie des CPU Intel)
-      - intel-lpmd
+        # --- Firmwares et pilotes Intel / Nvidia (place disque, machine 100 % AMD) ---
+        - nvidia-gpu-firmware
+        - intel-gpu-firmware
+        - intel-npu-firmware
+        - intel-vsc-firmware
+        - intel-audio-firmware
+        - intel-opencl
+        - intel-gmmlib
+        - intel-igc
+        - intel-igc-libs
+        - intel-mediasdk
+        - intel-opencl-clang
+        - intel-vaapi-driver
+        - intel-vpl-gpu-rt
+        - libva-intel-media-driver
+        # Service intel_lpmd activé (gestion d'énergie des CPU Intel)
+        - intel-lpmd
 
-      # --- Agents de machines virtuelles (services activés, inutiles en bare-metal) ---
-      - open-vm-tools
-      - open-vm-tools-desktop
-      - virtualbox-guest-additions
-      - hyperv-daemons
-      - hypervkvpd
-      - hypervvssd
-      - hypervfcopyd
-      - qemu-guest-agent
-      - spice-vdagent
-      - spice-webdavd
+        # --- Agents de machines virtuelles (services activés, inutiles en bare-metal) ---
+        - open-vm-tools
+        - open-vm-tools-desktop
+        - virtualbox-guest-additions
+        - hyperv-daemons
+        - hypervkvpd
+        - hypervvssd
+        - hypervfcopyd
+        - qemu-guest-agent
+        - spice-vdagent
+        - spice-webdavd
 
-      # --- Modules chargés au démarrage pour du matériel absent ---
-      - system76-driver
-      - system76-io
-      - kmod-system76-driver
-      - kmod-system76-io
-      - gcadapter_oc
-      - kmod-gcadapter_oc
-      - kvmfr
-      - kmod-kvmfr
+        # --- Modules chargés au démarrage pour du matériel absent ---
+        - system76-driver
+        - system76-io
+        - kmod-system76-driver
+        - kmod-system76-io
+        - gcadapter_oc
+        - kmod-gcadapter_oc
+        - kvmfr
+        - kmod-kvmfr
 
-      # --- Périphériques Razer (non utilisés) ---
-      - openrazer
-      - kmod-openrazer
+        # --- Périphériques Razer (non utilisés) ---
+        - openrazer
+        - kmod-openrazer
 
-      # --- Accessibilité, braille et synthèse vocale (non utilisés) ---
-      - brltty
-      - brlapi
-      - python3-brlapi
-      - orca
-      - espeak-ng
-      - speech-dispatcher
-      - speech-dispatcher-espeak-ng
+        # --- Accessibilité, braille et synthèse vocale (non utilisés) ---
+        - brltty
+        - brlapi
+        - python3-brlapi
+        - orca
+        - espeak-ng
+        - speech-dispatcher
+        - speech-dispatcher-espeak-ng
 
   # 3. Services systemd : démon LACT natif + verrouillage de l'administration web Cockpit
   - type: systemd

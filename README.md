@@ -62,11 +62,11 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 
 ## Retraits
 
-Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 59 paquets, environ 580 Mo sur une image de 7,8 Go.
+Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 57 paquets, environ 540 Mo sur une image de 8,1 Go (Fedora 45).
 
 * **Retirés parce qu'ils tournent ou se chargent au démarrage** : Waydroid, agents de machines virtuelles
   (QEMU, Spice, VMware, VirtualBox, Hyper-V), `intel-lpmd`, modules System76, adaptateur GameCube (`gcadapter_oc`), Looking Glass (`kvmfr`).
-* **Retirés parce qu'ils s'affichent** : Lutris, MakeMKV, Yelp, Web App Manager, l'interface de cardwire, l'ancien
+* **Retirés parce qu'ils s'affichent** : Lutris, Yelp, Web App Manager, l'interface de cardwire, l'ancien
   bazzite-updater, les presets et la recherche Steam Deck (Yafti), l'extension User Themes, Fish.
 * **Retirés pour la place disque** : firmwares et bibliothèques Intel/Nvidia (≈ 370 Mo).
 * **Retirés car inutiles ici** : accessibilité (Orca, braille, synthèse vocale), OpenRazer.

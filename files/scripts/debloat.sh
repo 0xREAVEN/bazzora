@@ -7,7 +7,7 @@ echo "1. Nettoyage ciblé des extensions GNOME préinstallées..."
 # On conserve uniquement AppIndicator (systray Steam/Heroic) et GSConnect.
 # Les extensions de Bazzite (compiz, magic-lamp, logomenu, hotedge, blur-my-shell…) ne sont
 # rattachées à aucun RPM : la suppression des fichiers est donc la seule méthode possible.
-# Les extensions paquetées (user-theme) sont retirées proprement via le module rpm-ostree.
+# Les extensions paquetées (user-theme) sont retirées proprement via le module dnf.
 if [ -d /usr/share/gnome-shell/extensions ]; then
     find /usr/share/gnome-shell/extensions/ -mindepth 1 -maxdepth 1 -type d \
         ! -name "appindicatorsupport@rgcjonas.gmail.com" \

@@ -87,8 +87,8 @@ fin
 
 # -----------------------------------------------------------------------------
 section "3. Paquets (debloat et ajouts)"
-mapfile -t RETIRES < <(yq -r '.modules[] | select(.type == "rpm-ostree") | .remove[]' "$RECIPE")
-mapfile -t AJOUTES < <(yq -r '.modules[] | select(.type == "rpm-ostree") | .install[]' "$RECIPE")
+mapfile -t RETIRES < <(yq -r '.modules[] | select(.type == "dnf") | .remove.packages[]' "$RECIPE")
+mapfile -t AJOUTES < <(yq -r '.modules[] | select(.type == "dnf") | .install.packages[]' "$RECIPE")
 
 PRESENTS=$(dans_image rpm -q "${RETIRES[@]}" 2>&1 | grep -v "is not installed" || true)
 if [ -z "$PRESENTS" ]; then
