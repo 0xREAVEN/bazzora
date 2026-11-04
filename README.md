@@ -61,13 +61,17 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 
 ## Retraits
 
-Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 57 paquets, environ 540 Mo sur une image de 8,1 Go (Fedora 45).
+Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 88 paquets, environ 880 Mo sur une image de 8,1 Go (Fedora 45).
 
 * **Retirés parce qu'ils tournent ou se chargent au démarrage** : Waydroid, agents de machines virtuelles
   (QEMU, Spice, VMware, VirtualBox, Hyper-V), `intel-lpmd`, modules System76, adaptateur GameCube (`gcadapter_oc`), Looking Glass (`kvmfr`).
 * **Retirés parce qu'ils s'affichent** : Lutris, Yelp, Web App Manager, l'interface de cardwire, l'ancien
   bazzite-updater, les presets et la recherche Steam Deck (Yafti), l'extension User Themes, Fish.
-* **Retirés pour la place disque** : firmwares et bibliothèques Intel/Nvidia (≈ 370 Mo).
+* **Retirés pour la place disque** : firmwares et bibliothèques Intel/Nvidia (≈ 365 Mo).
+* **Bibliothèques orphelines** : celles qui ne servaient qu'à un composant retiré, soit LLVM 22 pour l'OpenCL Intel
+  (≈ 260 Mo), les KDE Frameworks de l'ancien bazzite-updater (≈ 75 Mo) et la pile LXC de Waydroid. Les bibliothèques
+  et outils génériques restent (rsync, wget2, dnsmasq, D-Bus, Qt, icônes Breeze). Le nettoyage automatique de dnf
+  (`auto-remove`) reste désactivé : il emporterait aussi des paquets utilisés sans dépendance déclarée, comme `dbus-broker`.
 * **Retirés car inutiles ici** : accessibilité (Orca, braille, synthèse vocale), OpenRazer.
 * **Volontairement conservés** : pilotes de volants (Fanatec, Thrustmaster, Logitech), Wi-Fi Broadcom,
   DisplayLink, `ds-inhibit` (manettes PlayStation), cardwire (gestion de l'iGPU du 9800X3D), snapper, bees et

@@ -29,14 +29,17 @@ modules:
         - gparted
         - papirus-icon-theme
         - gnome-initial-setup
-    # Retrait ciblé : uniquement ce qui tourne, se charge au démarrage ou s'affiche à l'écran
-    # dans Bazzite (vérifié sur bazzite-gnome 45.20261104), plus les firmwares Intel/Nvidia.
-    # Les paquets inertes (pilotes de matériel absent, outils non activés) sont conservés :
-    # chacun retiré ici est un paquet de plus que Bazzite peut renommer et faire échouer le build.
-    # dnf remove retire aussi les paquets qui dépendent d'un paquet listé : la liste a été vérifiée
-    # sur la base RPM de Bazzite (aucun paquet conservé n'en dépend).
+    # Retrait ciblé, vérifié sur la base RPM de bazzite-gnome 45.20261104 :
+    #   - ce qui tourne, se charge au démarrage ou s'affiche à l'écran sans servir sur cette machine ;
+    #   - les firmwares Intel/Nvidia (place disque) ;
+    #   - les bibliothèques propres à un composant retiré (orphelines). Les bibliothèques et outils
+    #     génériques restent (rsync, wget2, dnsmasq, D-Bus, Qt, icônes Breeze…).
+    # Les paquets inertes sont conservés : chacun retiré ici est un nom que Bazzite peut renommer,
+    # ce qui ferait échouer le build. Aucun paquet conservé ne dépend d'un paquet de cette liste
+    # (dnf remove retirerait sinon ces dépendants).
     remove:
-      # Ne retirer que les paquets listés, comme rpm-ostree (pas de nettoyage des dépendances)
+      # Ne retirer que les paquets listés : un nettoyage automatique des dépendances emporterait
+      # aussi des paquets utilisés sans dépendance RPM déclarée (dbus-broker, rsync, pciutils…).
       auto-remove: false
       packages:
         # --- Android / Waydroid (service waydroid-container actif) ---
@@ -44,15 +47,44 @@ modules:
         - waydroid-selinux
         - libgbinder
         - python3-gbinder
+        # Conteneurs LXC utilisés uniquement par Waydroid
+        - lxc
+        - lxc-libs
+        - lxc-templates
+        - lxcfs
 
         # --- Applications visibles non désirées ---
         - lutris
+        - python3-moddb
+        - python3-pypresence
         - webapp-manager
         - yelp
-        - bazzite-updater
+        - yelp-libs
+        - yelp-xsl
         # cardwire (gestion multi-GPU, fournit switcheroo-control requis par gnome-shell) est conservé :
         # le Ryzen 9800X3D a un iGPU en plus de la Radeon. Seule son interface graphique est retirée.
         - cardwire-gui
+
+        # --- Ancien gestionnaire de mises à jour (remplacé par ujust bazzora-update) ---
+        # et KDE Frameworks qu'il est seul à utiliser
+        - bazzite-updater
+        - kf6-breeze-icons
+        - kf6-kcolorscheme
+        - kf6-kconfig
+        - kf6-kcoreaddons
+        - kf6-kcrash
+        - kf6-kglobalaccel
+        - kf6-kguiaddons
+        - kf6-ki18n
+        - kf6-kiconthemes
+        - kf6-kirigami
+        - kf6-kirigami-addons
+        - kf6-kquickcharts
+        - kf6-kwidgetsaddons
+        - kf6-qqc2-desktop-style
+        - kf6-sonnet
+        - qqc2-breeze-style
+        - qt6-controllable
 
         # --- Shell Fish (remplacé par Bash + bash-completion + Starship) ---
         - fish
@@ -79,6 +111,13 @@ modules:
         - intel-vaapi-driver
         - intel-vpl-gpu-rt
         - libva-intel-media-driver
+        # LLVM 22, conservé par Fedora 45 uniquement pour la pile OpenCL Intel (Mesa utilise LLVM 23)
+        - llvm22-libs
+        - llvm22-filesystem
+        - clang22-libs
+        - clang22-resource-filesystem
+        - lld22-libs
+        - spirv-llvm-translator22
         # Service intel_lpmd activé (gestion d'énergie des CPU Intel)
         - intel-lpmd
 

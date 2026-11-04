@@ -106,8 +106,10 @@ else
     sed 's/^/    /' <<<"$MANQUANTS"
 fi
 
-# Paquets volontairement conservés (retrait ciblé) : matériel utilisé, snapshots, gestion multi-GPU
-GARDES=(cardwire ds-inhibit snapper bees btrfs-assistant broadcom-wl kmod-evdi new-lg4ff hid-fanatecff hid-tmff2 t150-driver)
+# Paquets volontairement conservés : matériel utilisé, snapshots, gestion multi-GPU, et paquets
+# génériques orphelins au sens RPM mais utilisés (ils disparaîtraient si auto-remove était activé)
+GARDES=(cardwire ds-inhibit snapper bees btrfs-assistant broadcom-wl kmod-evdi new-lg4ff hid-fanatecff hid-tmff2 t150-driver
+        dbus-broker rsync dnsmasq pciutils)
 ABSENTS=$(dans_image rpm -q "${GARDES[@]}" 2>&1 | grep "is not installed" || true)
 if [ -z "$ABSENTS" ]; then
     ok "les ${#GARDES[@]} paquets conservés sont présents"
