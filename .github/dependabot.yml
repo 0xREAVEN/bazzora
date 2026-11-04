@@ -1,6 +1,14 @@
 version: 2
 updates:
+  # Actions GitHub (épinglées par SHA) : une seule PR groupée par semaine, testée par la CI
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    groups:
+      actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "CI"

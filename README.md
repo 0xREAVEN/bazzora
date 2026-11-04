@@ -104,11 +104,18 @@ ujust manage-vscode install     # Installe ou retire VS Code via Homebrew
 ## Installation
 
 ### ISO
-1. Télécharger les parties `bazzora-latest.iso.part*` et `bazzora-latest.iso-CHECKSUM` depuis les
-   [Releases](https://github.com/0xREAVEN/bazzora/releases).
-2. Reconstituer et vérifier :
-   * Linux : `cat bazzora-latest.iso.part* > bazzora-latest.iso && sha256sum -c bazzora-latest.iso-CHECKSUM`
-   * Windows : `cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso`, puis comparer `Get-FileHash bazzora-latest.iso -Algorithm SHA256` au fichier d'empreinte.
+1. Télécharger depuis les [Releases](https://github.com/0xREAVEN/bazzora/releases) les parties `bazzora-latest.iso.part*`,
+   la somme de contrôle `bazzora-latest.iso-CHECKSUM` et sa signature `bazzora-latest.iso-CHECKSUM.sigstore.json`.
+2. Reconstituer et vérifier (Linux) :
+   ```bash
+   cat bazzora-latest.iso.part* > bazzora-latest.iso
+   # Authenticité : la somme de contrôle est signée avec la clé du dépôt
+   cosign verify-blob --key cosign.pub --bundle bazzora-latest.iso-CHECKSUM.sigstore.json bazzora-latest.iso-CHECKSUM
+   # Intégrité : l'ISO correspond à la somme de contrôle signée
+   sha256sum -c bazzora-latest.iso-CHECKSUM
+   ```
+   Sous Windows : `cmd /c copy /b bazzora-latest.iso.part* bazzora-latest.iso`, puis comparer `Get-FileHash bazzora-latest.iso -Algorithm SHA256`
+   au fichier `-CHECKSUM` (la vérification de la signature demande `cosign`).
 3. Copier l'ISO sur une clé [Ventoy](https://www.ventoy.net/) ou la flasher avec [BalenaEtcher](https://etcher.balena.io/), puis démarrer dessus.
 
 ### Rebase depuis Bazzite ou Silverblue
@@ -136,7 +143,10 @@ systemctl reboot
   (sans démarrage réel ni GPU) : conformité `bootc`, chargement de `ujust`, paquets retirés et conservés, services
   (LACT, Cockpit masqué), fichiers de configuration, schémas GSettings, signature Cosign. Il ne devient `latest`
   que si tous les tests passent ([build.yml](.github/workflows/build.yml), [test-image.sh](.github/scripts/test-image.sh)).
-* **Signature** : `cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora`
+* **Signature** : `cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora` pour l'image ; la somme de contrôle de l'ISO
+  est signée avec la même clé (voir Installation).
+* **Chaîne de build** : les actions GitHub sont épinglées par empreinte (SHA) et mises à jour par Dependabot ; un workflow
+  hebdomadaire ([cleanup.yml](.github/workflows/cleanup.yml)) supprime les anciennes images candidates du registre.
 
 ---
 
