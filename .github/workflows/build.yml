@@ -44,7 +44,7 @@ jobs:
     steps:
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
-        uses: blue-build/github-action@v1.11
+        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11.1
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -70,7 +70,7 @@ jobs:
       os_version: ${{ steps.candidate.outputs.os_version }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Libération d'espace disque
         run: |
@@ -105,7 +105,7 @@ jobs:
           echo "base_image=${BASE}" >> "$GITHUB_OUTPUT"
 
       - name: Installation de Cosign
-        uses: sigstore/cosign-installer@v4.1.2
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
       - name: Vérification de la signature Cosign
         run: cosign verify --key cosign.pub "${IMAGE}@${{ steps.candidate.outputs.digest }}" > /dev/null

@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Version Fedora de la recette
         id: fedora
@@ -42,7 +42,7 @@ jobs:
           df -h /
 
       - name: Build Container Installer ISO
-        uses: jasonn3/build-container-installer@v1.5.0 # version figée (Dependabot propose les mises à jour)
+        uses: jasonn3/build-container-installer@bed71f841c250650a70f1ed8315ba92da1591ba6 # v1.5.0
         id: build
         with:
           arch: x86_64
@@ -54,7 +54,7 @@ jobs:
           iso_name: bazzora-latest.iso
 
       - name: Upload ISO Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: bazzora-latest-iso
           path: |
@@ -71,8 +71,24 @@ jobs:
           echo "=== Fichiers prêts pour la Release ==="
           ls -lh "${{ steps.build.outputs.iso_name }}"*
 
+      - name: Installation de Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Signature de la somme de contrôle
+        # Même clé que l'image (secret SIGNING_SECRET, clé publique cosign.pub) : la somme de contrôle
+        # prouve que l'ISO est intacte, la signature qu'elle vient bien de ce dépôt.
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ""
+          CHECKSUM: ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes --key env://COSIGN_PRIVATE_KEY --bundle "${CHECKSUM}.sigstore.json" "${CHECKSUM}"
+          # Contrôle immédiat avec la clé publique du dépôt : une signature invalide bloque la publication
+          cosign verify-blob --key cosign.pub --bundle "${CHECKSUM}.sigstore.json" "${CHECKSUM}"
+
       - name: Publish ISO to GitHub Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           tag_name: latest
           name: "Bazzora Installer ISO (Latest)"
@@ -85,11 +101,14 @@ jobs:
 
             ### 📦 Assembler l'ISO après téléchargement (Recombine Split Parts)
             En raison de la limite stricte de **2 Go par fichier** imposée par GitHub, l'image est découpée en parties de 1,9 Go.
-            Téléchargez l'ensemble des fichiers (`.part01`, `.part02`, `.part03`, etc.) ainsi que le fichier `.CHECKSUM` dans le même dossier, puis exécutez la commande correspondante :
+            Téléchargez l'ensemble des fichiers (`.part01`, `.part02`, `.part03`, etc.), le fichier `-CHECKSUM` et sa signature `-CHECKSUM.sigstore.json` dans le même dossier, puis exécutez la commande correspondante :
 
             * **Linux / macOS (Terminal) :**
               ```bash
               cat bazzora-latest.iso.part* > bazzora-latest.iso
+              # Authenticité : la somme de contrôle est signée avec la clé du dépôt (cosign.pub)
+              cosign verify-blob --key cosign.pub --bundle bazzora-latest.iso-CHECKSUM.sigstore.json bazzora-latest.iso-CHECKSUM
+              # Intégrité : l'ISO reconstituée correspond à la somme de contrôle signée
               sha256sum -c bazzora-latest.iso-CHECKSUM
               ```
 
@@ -109,3 +128,4 @@ jobs:
           files: |
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}.part*
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM.sigstore.json

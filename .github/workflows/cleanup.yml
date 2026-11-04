@@ -1,0 +1,64 @@
+name: Nettoyage du registre
+
+# Supprime les images devenues inutiles de ghcr.io/0xreaven/bazzora :
+#   - images candidates (par commit, branche, PR) de plus de 14 jours ;
+#   - images datées de plus de 90 jours (l'historique récent reste disponible pour un retour arrière) ;
+#   - manifestes sans tag et signatures Cosign orphelines qui en résultent.
+# « latest » et les tags de version Fedora (« 44 », « 45 »…) ne sont jamais supprimés.
+# L'action gère les index OCI (image + attestation) et les signatures : les manifestes enfants
+# d'une image conservée restent en place.
+#
+# Lancement manuel : simulation par défaut (dry-run), pour vérifier la liste avant suppression.
+
+on:
+  schedule:
+    - cron: "17 3 * * 0" # dimanche 03:17 UTC
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Simulation uniquement (aucune suppression)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  nettoyage:
+    name: Nettoyage de ghcr.io/0xreaven/bazzora
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    env:
+      # Planifié : suppression réelle. Manuel : selon l'option (simulation par défaut).
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+    steps:
+      - name: Images candidates de plus de 14 jours
+        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+        with:
+          package: bazzora
+          use-regex: true
+          delete-tags: '^([0-9a-f]{7}-|br-|pr-|[0-9]{8}-candidate|candidate).*$'
+          exclude-tags: '^(latest|[0-9]+)$'
+          older-than: 14 days
+          dry-run: ${{ env.DRY_RUN }}
+
+      - name: Images datées de plus de 90 jours
+        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+        with:
+          package: bazzora
+          use-regex: true
+          delete-tags: '^[0-9]{8}(-[0-9]+)?$'
+          exclude-tags: '^(latest|[0-9]+)$'
+          older-than: 90 days
+          dry-run: ${{ env.DRY_RUN }}
+
+      - name: Manifestes sans tag et signatures orphelines
+        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+        with:
+          package: bazzora
+          delete-untagged: true
+          delete-orphaned-images: true
+          validate: true
+          dry-run: ${{ env.DRY_RUN }}
