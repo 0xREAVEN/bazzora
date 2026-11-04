@@ -81,11 +81,11 @@ titre "Réglages gaming"
 if [ -c /dev/ntsync ]; then
     ok "NTSYNC disponible (/dev/ntsync)"
 else
-    ko "NTSYNC indisponible : PROTON_USE_NTSYNC=1 sera sans effet"
+    ko "NTSYNC indisponible : Proton se rabattra sur esync/fsync"
 fi
 
 ENV_SESSION=$(systemctl --user show-environment 2>/dev/null || true)
-for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1 PROTON_USE_NTSYNC=1; do
+for variable in MESA_SHADER_CACHE_MAX_SIZE=50G; do
     if grep -qx "$variable" <<<"$ENV_SESSION"; then
         ok "Variable de session $variable"
     else

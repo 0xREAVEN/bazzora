@@ -15,6 +15,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Version Fedora de la recette
+        id: fedora
+        run: |
+          set -euo pipefail
+          # image-version (« stable-45 ») est la seule source de la version Fedora
+          TAG=$(yq -r '.["image-version"]' recipes/recipe.yml)
+          VERSION="${TAG##*-}"
+          if ! [[ "${VERSION}" =~ ^[0-9]+$ ]]; then
+            echo "::error::image-version « ${TAG} » ne contient pas de version Fedora (attendu : stable-<N>)"
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Free Disk Space (Runner & Docker)
         run: |
           echo "=== Espace disque initial ==="
@@ -36,7 +49,7 @@ jobs:
           image_name: bazzora
           image_repo: ghcr.io/0xreaven
           image_tag: latest
-          version: 45 # version Fedora de l'image de base (bazzite-gnome), à suivre lors des changements de version
+          version: ${{ steps.fedora.outputs.version }}
           variant: Silverblue
           iso_name: bazzora-latest.iso
 
