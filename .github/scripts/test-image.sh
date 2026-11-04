@@ -159,7 +159,7 @@ for fichier in \
     if dans_image test -s "$fichier"; then ok "$fichier"; else ko "$fichier manquant ou vide"; fi
 done
 
-for variable in MESA_SHADER_CACHE_MAX_SIZE=50G PROTON_ENABLE_AMD_AGS=1 PROTON_USE_NTSYNC=1; do
+for variable in MESA_SHADER_CACHE_MAX_SIZE=50G XCURSOR_THEME=Bibata-Modern-Ice; do
     if dans_image grep -qx "$variable" /etc/environment.d/10-amd-gaming.conf; then
         ok "variable $variable"
     else

@@ -1,7 +1,10 @@
 name: bazzora
 description: Image Bazzite-GNOME debloatée et optimisée pour PC Gaming Full AMD.
 base-image: ghcr.io/ublue-os/bazzite-gnome
-image-version: latest
+# Version Fedora suivie : « stable-<N> » reçoit chaque jour les mises à jour de Bazzite pour Fedora N,
+# sans jamais changer de version majeure. Pour passer à Fedora N+1, modifier ce tag dans une PR :
+# la CI (image de comparaison des tests) et l'ISO lisent cette valeur, rien d'autre n'est à changer.
+image-version: stable-45
 
 # Les builds sont publiés sous le tag « candidate » uniquement.
 # Le workflow CI les teste, puis promeut l'image validée en « latest » (voir .github/workflows/build.yml).

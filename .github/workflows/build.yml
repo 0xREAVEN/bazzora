@@ -18,7 +18,6 @@ concurrency:
 env:
   # En minuscules : les noms d'images OCI n'acceptent pas de majuscules (0xREAVEN → 0xreaven)
   IMAGE: ghcr.io/0xreaven/bazzora
-  BASE_IMAGE: ghcr.io/ublue-os/bazzite-gnome:latest
 
 # Chaîne de publication sécurisée :
 #   1. build    → construit et signe l'image, publiée uniquement sous des tags « candidate »
@@ -54,6 +53,10 @@ jobs:
 
           # enabled by default, disable if your image is small and you want faster builds
           maximize_build_space: true
+
+          # Découpage de l'image en couches stables (rpm-ostree compose build-chunked-oci) :
+          # une mise à jour ne télécharge que les couches modifiées.
+          build_chunked_oci: true
 
   test:
     name: Tests de l'image candidate
@@ -97,6 +100,9 @@ jobs:
           echo "Image candidate : ${IMAGE}:${TAG} (${DIGEST})"
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           echo "os_version=${TAG##*-}" >> "$GITHUB_OUTPUT"
+          # Image de base de la recette, utilisée pour distinguer les défauts hérités des régressions
+          BASE=$(yq -r '.["base-image"] + ":" + .["image-version"]' recipes/recipe.yml)
+          echo "base_image=${BASE}" >> "$GITHUB_OUTPUT"
 
       - name: Installation de Cosign
         uses: sigstore/cosign-installer@v4.1.2
@@ -108,7 +114,7 @@ jobs:
         run: podman pull -q "${IMAGE}@${{ steps.candidate.outputs.digest }}"
 
       - name: Tests de fumée
-        run: .github/scripts/test-image.sh "${IMAGE}@${{ steps.candidate.outputs.digest }}" "${BASE_IMAGE}"
+        run: .github/scripts/test-image.sh "${IMAGE}@${{ steps.candidate.outputs.digest }}" "${{ steps.candidate.outputs.base_image }}"
 
   promote:
     name: Publication en « latest »

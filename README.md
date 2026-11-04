@@ -28,7 +28,7 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 
 * Noyau gaming de Bazzite (OGC), Mesa RADV/ACO en 32 et 64 bits, Steam, Gamescope.
 * `vm.max_map_count = 2147483642`, contrôle de congestion TCP `bbr`, ZRAM compressé en zstd.
-* Module `ntsync` chargé au démarrage, profils d'énergie tuned (`balanced` / `performance`).
+* Module `ntsync` chargé au démarrage (Proton-GE active NTSYNC de lui-même), profils d'énergie tuned (`balanced` / `performance`).
 * Watchdogs actifs (récupération après un blocage complet) : `ujust configure-watchdog` pour les désactiver.
 * Délai de 20 s avant la fenêtre *« L'application ne répond pas »*.
 * Upgrade FSR 4 global pour les Radeon RDNA 4 : `ujust global-fsr4`.
@@ -51,7 +51,6 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 | Réglage | Valeur | Ce que ça fait | Fichier |
 | :--- | :--- | :--- | :--- |
 | Cache de shaders Mesa | `MESA_SHADER_CACHE_MAX_SIZE=50G` | Garde les shaders compilés au-delà de la limite Mesa par défaut (1 Go). Peut occuper jusqu'à 50 Go dans `~/.cache`. | [10-amd-gaming.conf](files/system/etc/environment.d/10-amd-gaming.conf) |
-| Proton | `PROTON_USE_NTSYNC=1`, `PROTON_ENABLE_AMD_AGS=1` | Active NTSYNC et AMD AGS dans les versions de Proton qui lisent ces variables. | idem |
 | Swap | `vm.swappiness = 100` | Utilise davantage le swap ZRAM de Bazzite (60 par défaut dans le noyau). | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
 | Écritures disque | `dirty_bytes` 256 Mo / 64 Mo, écriture toutes les 15 s | Écrit les données par plus petits lots. Également appliqué en mode « performance » via un profil tuned dédié. | idem + [throughput-performance-bazzora](files/system/usr/lib/tuned/profiles/throughput-performance-bazzora/tuned.conf) |
 | Réseau | `net.core.default_qdisc = fq` | Pacing des paquets (Fedora utilise `fq_codel`). Complète le BBR de Bazzite, qui ne concerne que le TCP. | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
@@ -125,6 +124,11 @@ systemctl reboot
 
 ## Retour arrière et sécurité
 
+* **Version Fedora maîtrisée** : la recette suit `bazzite-gnome:stable-45`, qui reçoit chaque jour les mises à jour de Bazzite
+  sans changer de version majeure. Le passage à Fedora 46 se fait en changeant `image-version` dans une PR testée ;
+  la CI et l'ISO lisent cette valeur.
+* **Mises à jour découpées** : l'image est reconstruite en couches stables (`build-chunked-oci`), si bien qu'une mise à jour
+  ne télécharge que les couches modifiées. La première mise à jour après ce changement télécharge l'image entière une fois.
 * **Retour arrière** : `rpm-ostree rollback && systemctl reboot`, ou choisir le déploiement précédent dans le menu de démarrage.
 * **Version de secours épinglée** : avant chaque mise à jour, `ujust bazzora-update` épingle le déploiement en cours.
   Une seule épingle Bazzora existe à la fois ; les épingles manuelles (`ostree admin pin`) ne sont jamais touchées.
