@@ -36,7 +36,7 @@ jobs:
           image_name: bazzora
           image_repo: ghcr.io/0xreaven
           image_tag: latest
-          version: 44
+          version: 45 # version Fedora de l'image de base (bazzite-gnome), à suivre lors des changements de version
           variant: Silverblue
           iso_name: bazzora-latest.iso
 

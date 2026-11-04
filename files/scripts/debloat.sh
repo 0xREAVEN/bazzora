@@ -7,7 +7,7 @@ echo "1. Nettoyage ciblé des extensions GNOME préinstallées..."
 # On conserve uniquement AppIndicator (systray Steam/Heroic) et GSConnect.
 # Les extensions de Bazzite (compiz, magic-lamp, logomenu, hotedge, blur-my-shell…) ne sont
 # rattachées à aucun RPM : la suppression des fichiers est donc la seule méthode possible.
-# Les extensions paquetées (user-theme) sont retirées proprement via le module rpm-ostree.
+# Les extensions paquetées (user-theme) sont retirées proprement via le module dnf.
 if [ -d /usr/share/gnome-shell/extensions ]; then
     find /usr/share/gnome-shell/extensions/ -mindepth 1 -maxdepth 1 -type d \
         ! -name "appindicatorsupport@rgcjonas.gmail.com" \
@@ -70,9 +70,8 @@ monospace-font-name='Fira Code weight=450 10'
 
 [org.gnome.mutter]
 center-new-windows=true
-# Seules les valeurs listées par Mutter sont acceptées : une valeur inconnue fait ignorer toute la clé.
-# Mutter 50 ne propose plus « variable-refresh-rate » comme fonctionnalité expérimentale.
-experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
+# experimental-features n'est plus défini : GNOME 51 a supprimé cette clé (glib-compile-schemas --strict
+# échoue sur une clé inconnue). Mise à l'échelle et VRR se règlent dans Paramètres › Écrans.
 
 [org.gnome.desktop.peripherals.mouse]
 accel-profile='flat'
