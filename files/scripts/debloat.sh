@@ -70,9 +70,8 @@ monospace-font-name='Fira Code weight=450 10'
 
 [org.gnome.mutter]
 center-new-windows=true
-# Seules les valeurs listées par Mutter sont acceptées : une valeur inconnue fait ignorer toute la clé.
-# Mutter 50 ne propose plus « variable-refresh-rate » comme fonctionnalité expérimentale.
-experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
+# experimental-features n'est plus défini : GNOME 51 a supprimé cette clé (glib-compile-schemas --strict
+# échoue sur une clé inconnue). Mise à l'échelle et VRR se règlent dans Paramètres › Écrans.
 
 [org.gnome.desktop.peripherals.mouse]
 accel-profile='flat'

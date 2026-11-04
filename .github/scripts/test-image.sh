@@ -224,12 +224,6 @@ compare_base "schémas GSettings stricts (glib-compile-schemas --strict)" \
 
 # Une valeur invalide dans un override est ignorée sans erreur hors mode strict : on lit les valeurs effectives
 lire() { dans_image env GSETTINGS_BACKEND=memory gsettings get "$1" "$2" 2>/dev/null || true; }
-MUTTER=$(lire org.gnome.mutter experimental-features)
-if grep -q scale-monitor-framebuffer <<<"$MUTTER" && grep -q xwayland-native-scaling <<<"$MUTTER"; then
-    ok "Mutter experimental-features : $MUTTER"
-else
-    ko "Mutter experimental-features ignoré ou incomplet : ${MUTTER:-illisible}"
-fi
 for cle in "org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice'" \
            "org.gnome.desktop.interface icon-theme 'Papirus-Dark'" \
            "org.gnome.desktop.peripherals.mouse accel-profile 'flat'"; do

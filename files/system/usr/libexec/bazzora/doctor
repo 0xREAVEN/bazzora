@@ -102,12 +102,6 @@ else
     warn "FSR 4 global désactivé (optionnel, RDNA 4 : « ujust global-fsr4 »)"
 fi
 
-MUTTER=$(gsettings get org.gnome.mutter experimental-features 2>/dev/null || true)
-if grep -q scale-monitor-framebuffer <<<"$MUTTER" && grep -q xwayland-native-scaling <<<"$MUTTER"; then
-    ok "Mutter : mise à l'échelle fractionnaire et XWayland natif actifs (VRR : Paramètres › Écrans)"
-else
-    warn "Fonctionnalités Mutter attendues absentes : ${MUTTER:-inconnu}"
-fi
 
 # Bazzite fournit tuned-ppd (API D-Bus de power-profiles-daemon) mais pas la commande powerprofilesctl
 PROFIL=$(gdbus call --system --dest net.hadess.PowerProfiles --object-path /net/hadess/PowerProfiles \
