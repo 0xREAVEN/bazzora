@@ -139,10 +139,15 @@ systemctl reboot
 * **Retour arrière** : `rpm-ostree rollback && systemctl reboot`, ou choisir le déploiement précédent dans le menu de démarrage.
 * **Version de secours épinglée** : avant chaque mise à jour, `ujust bazzora-update` épingle le déploiement en cours.
   Une seule épingle Bazzora existe à la fois ; les épingles manuelles (`ostree admin pin`) ne sont jamais touchées.
-* **Publication testée** : chaque build est publié sous le tag `candidate`, puis passe des tests de fumée dans un conteneur
-  (sans démarrage réel ni GPU) : conformité `bootc`, chargement de `ujust`, paquets retirés et conservés, services
-  (LACT, Cockpit masqué), fichiers de configuration, schémas GSettings, signature Cosign. Il ne devient `latest`
-  que si tous les tests passent ([build.yml](.github/workflows/build.yml), [test-image.sh](.github/scripts/test-image.sh)).
+* **Publication testée** : chaque build est publié sous le tag `candidate`, puis vérifié en deux temps :
+  - tests de fumée dans un conteneur : conformité `bootc`, chargement de `ujust`, paquets retirés et conservés, services
+    (LACT, Cockpit masqué), fichiers de configuration, schémas GSettings, signature Cosign
+    ([test-image.sh](.github/scripts/test-image.sh)) ;
+  - démarrage réel : installation par `bootc install to-disk` sur un disque virtuel, puis démarrage dans QEMU/KVM
+    jusqu'à l'invite de connexion ([boot-test.sh](.github/scripts/boot-test.sh)). Sans GPU AMD : le pilote graphique
+    et les jeux ne sont pas testés.
+
+  L'image ne devient `latest` que si les deux passent ([build.yml](.github/workflows/build.yml)).
 * **Signature** : `cosign verify --key cosign.pub ghcr.io/0xreaven/bazzora` pour l'image ; la somme de contrôle de l'ISO
   est signée avec la même clé (voir Installation).
 * **Chaîne de build** : les actions GitHub sont épinglées par empreinte (SHA) et mises à jour par Dependabot ; un workflow
