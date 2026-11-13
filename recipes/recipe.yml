@@ -174,15 +174,7 @@ modules:
     scripts:
       - debloat.sh
 
-  # 5. Polices Nerd Fonts pour le terminal et les invites de commande
-  - type: fonts
-    fonts:
-      nerd-fonts:
-        - FiraCode
-        - JetBrainsMono
-        - Hack
-
-  # 6. Flatpaks par défaut (écosystème épuré)
+  # 5. Flatpaks par défaut (écosystème épuré)
   - type: default-flatpaks
     configurations:
       - scope: system
@@ -219,8 +211,8 @@ modules:
           - com.vysp3r.ProtonPlus
           - io.github.benjamimgois.goverlay
 
-  # 7. Intégration des commandes ujust personnalisées (60-bazzora.just)
+  # 6. Intégration des commandes ujust personnalisées (60-bazzora.just)
   - type: justfiles
 
-  # 8. Signature de l'image
+  # 7. Signature de l'image
   - type: signing

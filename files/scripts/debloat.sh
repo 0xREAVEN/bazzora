@@ -21,7 +21,6 @@ rm -f /usr/share/glib-2.0/schemas/zz0-01-bazzite-desktop-silverblue-dash.gschema
 rm -f /usr/share/glib-2.0/schemas/zz0-02-bazzite-desktop-silverblue-folders.gschema.override
 rm -f /usr/share/glib-2.0/schemas/zz0-03-bazzite-desktop-silverblue-extensions.gschema.override
 rm -f /usr/share/glib-2.0/schemas/zz0-04-bazzite-desktop-silverblue-theme.gschema.override
-find /usr/share/glib-2.0/schemas/ -type f \( -name "*compiz*.override" -o -name "*logomenu*.override" \) -exec rm -vf {} +
 
 # Override du dock GNOME et activation par défaut du systray AppIndicator
 cat << 'EOF' > /usr/share/glib-2.0/schemas/zz0-01-bazzora-dash.gschema.override
@@ -82,48 +81,55 @@ button-layout='appmenu:minimize,maximize,close'
 [org.gnome.desktop.background]
 color-shading-type='solid'
 picture-options='zoom'
-picture-uri='file:///usr/share/backgrounds/bazzora/background.png'
-picture-uri-dark='file:///usr/share/backgrounds/bazzora/background.png'
+picture-uri='file:///usr/share/backgrounds/bazzora/background.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/bazzora/background.jpg'
 primary-color='#202646'
 secondary-color='#36438E'
 
 [org.gnome.desktop.screensaver]
 color-shading-type='solid'
 picture-options='zoom'
-picture-uri='file:///usr/share/backgrounds/bazzora/background.png'
+picture-uri='file:///usr/share/backgrounds/bazzora/background.jpg'
 primary-color='#202646'
 secondary-color='#36438E'
+EOF
+
+# Indexeur de fichiers GNOME (LocalSearch) : les préfixes Wine/Proton et les bibliothèques de jeux
+# sont exclus. Ils contiennent des milliers d'exécutables Windows sans intérêt pour la recherche,
+# réécrits en permanence par les lanceurs, et dont l'analyse a provoqué une fuite mémoire
+# (localsearch 3.12). Les exclusions s'ajoutent aux valeurs par défaut de LocalSearch, lues dans
+# l'image : une clé renommée en amont fait échouer le build au lieu d'être ignorée.
+#   - ignored-directories-with-content : tout dossier contenant « system.reg » est un préfixe Wine ;
+#   - ignored-directories : noms de dossiers (Steam, Proton, cache de shaders).
+INDEXEUR=org.freedesktop.Tracker3.Miner.Files
+# Ajoute des éléments à une liste GVariant de chaînes : "['a', 'b']" ou "@as []"
+liste_etendue() {
+    local cle=$1 defaut ajouts
+    shift
+    defaut=$(GSETTINGS_BACKEND=memory gsettings get "$INDEXEUR" "$cle")
+    ajouts=$(printf "'%s', " "$@")
+    ajouts=${ajouts%, }
+    case "$defaut" in
+        '@as []'|'[]') echo "[${ajouts}]" ;;
+        '['*']') echo "${defaut%]}, ${ajouts}]" ;;
+        *) echo "Valeur inattendue pour $cle : $defaut" >&2; return 1 ;;
+    esac
+}
+EXCLUS_CONTENU=$(liste_etendue ignored-directories-with-content system.reg)
+EXCLUS_NOMS=$(liste_etendue ignored-directories drive_c compatdata steamapps shadercache)
+cat << EOF > /usr/share/glib-2.0/schemas/zz0-05-bazzora-indexeur.gschema.override
+[${INDEXEUR}]
+ignored-directories-with-content=${EXCLUS_CONTENU}
+ignored-directories=${EXCLUS_NOMS}
 EOF
 
 # Recompilation des schémas glib
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 echo "3. Nettoyage de la configuration dconf..."
-# Supprime les règles dconf liées aux extensions Bazzite et anciens dossiers
-rm -f /etc/dconf/db/distro.d/*compiz* 2>/dev/null || true
-rm -f /etc/dconf/db/distro.d/00-bazzite-desktop-silverblue-global 2>/dev/null || true
-rm -f /etc/dconf/db/distro.d/01-bazzite-desktop-silverblue-folders 2>/dev/null || true
-
-# Configuration des raccourcis claviers propres (avec clé parente obligatoire)
-cat << 'EOF' > /etc/dconf/db/distro.d/00-bazzora-global
-[org/gnome/settings-daemon/plugins/media-keys]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/']
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
-binding='<Control><Alt>t'
-command='ptyxis --new-window'
-name='Terminal'
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
-binding='<Control><Alt>KP_Delete'
-command='flatpak run io.missioncenter.MissionCenter'
-name='Mission Center'
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
-binding='<Control><Shift>Escape'
-command='flatpak run io.missioncenter.MissionCenter'
-name='Mission Center'
-EOF
+# 00-bazzite-desktop-silverblue-global (raccourcis Ctrl+Alt+T et Mission Center) et son verrou sont
+# conservés tels quels ; seuls les dossiers d'applications de Bazzite sont remplacés.
+rm -f /etc/dconf/db/distro.d/01-bazzite-desktop-silverblue-folders
 
 # Configuration des dossiers d'applications épurés dans dconf
 cat << 'EOF' > /etc/dconf/db/distro.d/01-bazzora-folders
@@ -133,7 +139,7 @@ name='Gaming Utilities'
 translate=false
 
 [org/gnome/desktop/app-folders/folders/Utilities]
-apps=['system-update.desktop', 'tuned-gui.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'com.github.GradienceTeam.Gradience', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'gparted.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
+apps=['system-update.desktop', 'tuned-gui.desktop', 'btop.desktop', 'com.github.tchx84.Flatseal.desktop', 'io.github.flattool.Warehouse.desktop', 'it.mijorus.gearlever.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.tweaks.desktop', 'io.github.fastrizwaan.WineZGUI.desktop', 'setroubleshoot.desktop', 'org.rncbc.qsynth.desktop', 'de.leopoldluley.Clapgrep.desktop', 'org.virt_manager.virt-manager.desktop', 'io.github.flattool.Ignition.desktop', 'firewall-config.desktop', 'org.freedesktop.MalcontentControl.desktop', 'page.tesk.Refine.desktop', 'bbrew.desktop', 'org.gnome.Firmware.desktop', 'gparted.desktop', 'io.github.ilya_zlobintsev.LACT.desktop']
 categories=['X-GNOME-Utilities']
 name='X-GNOME-Utilities.directory'
 translate=true
@@ -164,7 +170,6 @@ rm -rf /usr/share/ublue-os/dconfs/desktop-silverblue/* 2>/dev/null || true
 
 echo "4. Nettoyage de l'autostart et des alias de shell..."
 rm -f /etc/skel/.config/autostart/bazzite-portal.desktop
-rm -f /etc/profile.d/bazzite-neofetch.sh
 # Astuces de la bannière : celles de Bazzite citent Lutris et Waydroid (retirés) ; remplacées par 20-bazzora.md
 rm -f /usr/share/ublue-os/motd/tips/20-bazzite.md
 
@@ -177,22 +182,20 @@ rm -rf /usr/share/backgrounds/bazzite*
 rm -rf /usr/share/backgrounds/convergence*
 rm -rf /usr/share/backgrounds/steamdeck*
 rm -rf /usr/share/backgrounds/giants*
+rm -rf /usr/share/backgrounds/penguins*
 rm -rf /usr/share/backgrounds/ublue*
 rm -rf /usr/share/gnome-background-properties/*
 
-if [ -f "/usr/share/backgrounds/bazzora/background.png" ]; then
-    echo "Configuration du fond d'écran Bazzora..."
-    ln -sf /usr/share/backgrounds/bazzora/background.png /usr/share/backgrounds/default.png
-    ln -sf /usr/share/backgrounds/bazzora/background.png /usr/share/backgrounds/default-dark.png
-
-    cat << 'EOF' > /usr/share/gnome-background-properties/bazzora.xml
+# Le fond d'écran Bazzora (fourni par le module files) est le seul proposé dans Paramètres › Apparence
+test -f /usr/share/backgrounds/bazzora/background.jpg
+cat << 'EOF' > /usr/share/gnome-background-properties/bazzora.xml
 <?xml version="1.0"?>
 <!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
 <wallpapers>
     <wallpaper deleted="false">
         <name>Bazzora</name>
-        <filename>/usr/share/backgrounds/bazzora/background.png</filename>
-        <filename-dark>/usr/share/backgrounds/bazzora/background.png</filename-dark>
+        <filename>/usr/share/backgrounds/bazzora/background.jpg</filename>
+        <filename-dark>/usr/share/backgrounds/bazzora/background.jpg</filename-dark>
         <options>zoom</options>
         <shade_type>solid</shade_type>
         <pcolor>#202646</pcolor>
@@ -200,7 +203,6 @@ if [ -f "/usr/share/backgrounds/bazzora/background.png" ]; then
     </wallpaper>
 </wallpapers>
 EOF
-fi
 
 echo "6. Neutralisation sécurisée des recettes ujust devenues obsolètes..."
 echo "# Debloated by Bazzora" > /usr/share/ublue-os/just/82-bazzite-waydroid.just
@@ -260,12 +262,6 @@ test -f /usr/lib/tuned/profiles/throughput-performance-bazzite/tuned.conf
 echo "7. Suppression des raccourcis d'applications obsolètes ou indésirables..."
 rm -f /usr/share/applications/*waydroid*.desktop /usr/share/applications/Waydroid*.desktop
 rm -f /usr/share/applications/bazzite-documentation.desktop
-rm -f /usr/share/applications/bazzite-landing.desktop
 rm -f /usr/share/applications/discourse.desktop
-rm -f /usr/share/applications/org.gnome.Yelp.desktop
-rm -f /usr/share/applications/*yelp*.desktop
-rm -f /usr/share/applications/orca.desktop
-rm -f /etc/xdg/autostart/orca-autostart.desktop
-rm -f /usr/share/applications/io.github.rfrench3.bazzite-updater.desktop
 
 echo "=== Debloat Bazzora terminé avec succès ==="
