@@ -100,7 +100,7 @@ restore-skel:
     #!/usr/bin/bash
     set -euo pipefail
     echo -e "\033[1mInitialisation des configurations Bazzora (/etc/skel)\033[0m"
-    echo "Cette commande déploie vos configurations Bash, Starship, MangoHud et configure Ptyxis."
+    echo "Cette commande déploie les configurations Starship, MangoHud et ScopeBuddy, et configure Ptyxis."
     echo ""
     read -p "Voulez-vous (M)anquants (copier sans écraser), (E)craser tout, ou (A)nnuler ? " choice
     case "$choice" in
@@ -133,11 +133,8 @@ restore-skel:
             echo "💻 Ptyxis : utilisation du shell de connexion (Bash)..."
             gsettings set "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/" use-custom-command false 2>/dev/null || true
         fi
-        echo "🎨 Application des thèmes Bazzora (Bibata Modern Ice & Papirus-Dark)..."
-        gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
     fi
-    echo -e "🎉 \033[32mBash, Starship et les thèmes sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
+    echo -e "🎉 \033[32mBash et Starship sont configurés ! Fermez et rouvrez votre terminal pour appliquer.\033[0m"
 
 # Activer ou désactiver l'installation automatique des Flatpaks au démarrage (pour éviter le spam de notifications). Options: status | enable | disable
 [group("system")]
@@ -207,10 +204,6 @@ toggle-flatpak-setup ACTION="":
 clean-bazzora:
     #!/usr/bin/bash
     set -euo pipefail
-    if flatpak list --app 2>/dev/null | grep -q "io.github.ilya_zlobintsev.LACT"; then
-        echo "🗑️ Suppression de la version Flatpak de LACT (remplacée par le RPM natif)..."
-        flatpak uninstall -y io.github.ilya_zlobintsev.LACT 2>/dev/null || true
-    fi
     echo "🧹 Suppression des runtimes Flatpak inutilisés..."
     flatpak uninstall --unused -y
     if command -v brew >/dev/null 2>&1; then

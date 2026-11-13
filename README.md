@@ -32,6 +32,7 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 * Watchdogs actifs (récupération après un blocage complet) : `ujust configure-watchdog` pour les désactiver.
 * Délai de 20 s avant la fenêtre *« L'application ne répond pas »*.
 * Upgrade FSR 4 global pour les Radeon RDNA 4 : `ujust global-fsr4`.
+* Raccourcis `Ctrl+Alt+T` (Ptyxis) et `Ctrl+Maj+Échap` (Mission Center).
 
 ## Ajouts
 
@@ -41,8 +42,7 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
   polices Nerd Fonts (FiraCode, JetBrainsMono, Hack).
 * **Flatpaks installés au premier démarrage** : applications GNOME de base, Firefox, Mission Center, Flatseal, Warehouse,
   Gear Lever, Extension Manager, Refine, Heroic, Faugus Launcher, ProtonPlus, GOverlay (liste dans [recipe.yml](recipes/recipe.yml)).
-* **Bureau GNOME épuré** : seules les extensions AppIndicator (active) et GSConnect sont conservées ; raccourcis
-  `Ctrl+Alt+T` (Ptyxis) et `Ctrl+Maj+Échap` (Mission Center).
+* **Bureau GNOME épuré** : seules les extensions AppIndicator (active) et GSConnect sont conservées.
 * **Bash + Starship** à la place de Fish, avec une initialisation au premier terminal
   ([bazzora-firstrun.sh](files/system/etc/profile.d/bazzora-firstrun.sh)).
 
@@ -56,7 +56,8 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 | Réseau | `net.core.default_qdisc = fq` | Pacing des paquets (Fedora utilise `fq_codel`). Complète le BBR de Bazzite, qui ne concerne que le TCP. | [99-bazzora-gaming.conf](files/system/etc/sysctl.d/99-bazzora-gaming.conf) |
 | THP | `defrag = defer+madvise`, `max_ptes_none = 409` | Change la politique de défragmentation des huge pages (elles restent en mode `madvise`). | [bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf) |
 | Audio | PipeWire `min-quantum = 256` | Plancher anti-craquements : aucune application ne descend sous 256 échantillons (≈ 5,3 ms à 48 kHz). Le quantum par défaut reste 1024 ; ce n'est pas une baisse de latence. | [10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf) |
-| Souris | `accel-profile = 'flat'` | Pas d'accélération du pointeur. | idem |
+| Souris | `accel-profile = 'flat'` | Pas d'accélération du pointeur. | [debloat.sh](files/scripts/debloat.sh) |
+| Indexeur de fichiers | préfixes Wine (`system.reg`), `drive_c`, `compatdata`, `steamapps`, `shadercache` exclus | LocalSearch n'analyse plus les exécutables Windows des jeux (boucle d'erreurs et fuite mémoire constatées avec localsearch 3.12). | idem |
 
 ## Retraits
 

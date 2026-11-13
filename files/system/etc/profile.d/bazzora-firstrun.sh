@@ -18,14 +18,6 @@ if [ -n "${BASH_VERSION:-}" ] && [[ $- == *i* ]] && [ -t 0 ]; then
             if [ -n "$PROFILE_ID" ]; then
                 gsettings set "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/${PROFILE_ID}/" use-custom-command false 2>/dev/null || true
             fi
-            # Curseur Bibata et thème d'icônes Papirus
-            gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || true
-            gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' 2>/dev/null || true
-        fi
-
-        # Cohérence d'accès aux icônes et au curseur pour les Flatpaks utilisateur
-        if command -v flatpak >/dev/null 2>&1; then
-            flatpak override --user --filesystem=/usr/share/icons:ro --env=XCURSOR_PATH=/run/host/usr/share/icons 2>/dev/null || true
         fi
 
         # Signale un shell de connexion devenu invalide (ancien Fish)

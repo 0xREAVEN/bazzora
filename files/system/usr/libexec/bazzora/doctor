@@ -85,13 +85,11 @@ else
 fi
 
 ENV_SESSION=$(systemctl --user show-environment 2>/dev/null || true)
-for variable in MESA_SHADER_CACHE_MAX_SIZE=50G; do
-    if grep -qx "$variable" <<<"$ENV_SESSION"; then
-        ok "Variable de session $variable"
-    else
-        ko "Variable $variable absente de la session (reconnectez-vous)"
-    fi
-done
+if grep -qx "MESA_SHADER_CACHE_MAX_SIZE=50G" <<<"$ENV_SESSION"; then
+    ok "Variable de session MESA_SHADER_CACHE_MAX_SIZE=50G"
+else
+    ko "Variable MESA_SHADER_CACHE_MAX_SIZE=50G absente de la session (reconnectez-vous)"
+fi
 
 CACHE=$(du -sh "$HOME"/.cache/mesa_shader_cache* 2>/dev/null | awk '{print $1}' | paste -sd+ -)
 ok "Cache de shaders Mesa utilisé : ${CACHE:-vide} (limite 50 Go)"
@@ -101,7 +99,6 @@ if [ -f "$HOME/.config/environment.d/99-proton-fsr4.conf" ]; then
 else
     warn "FSR 4 global désactivé (optionnel, RDNA 4 : « ujust global-fsr4 »)"
 fi
-
 
 # Bazzite fournit tuned-ppd (API D-Bus de power-profiles-daemon) mais pas la commande powerprofilesctl
 PROFIL=$(gdbus call --system --dest net.hadess.PowerProfiles --object-path /net/hadess/PowerProfiles \
@@ -149,6 +146,17 @@ if [ -f /var/lib/flatpak/overrides/global ]; then
     ok "Overrides Flatpak globaux en place (curseur / icônes)"
 else
     warn "Overrides Flatpak globaux absents (créés au prochain démarrage)"
+fi
+
+# Indexeur de fichiers GNOME : les préfixes Wine doivent rester exclus (fuite mémoire de localsearch 3.12)
+INDEX_REC=$(gsettings get org.freedesktop.Tracker3.Miner.Files index-recursive-directories 2>/dev/null || true)
+INDEX_EXCL=$(gsettings get org.freedesktop.Tracker3.Miner.Files ignored-directories-with-content 2>/dev/null || true)
+if grep -q "'\$HOME'" <<<"$INDEX_REC"; then
+    warn "L'indexeur parcourt tout le dossier personnel (« gsettings reset org.freedesktop.Tracker3.Miner.Files index-recursive-directories »)"
+elif grep -q "'system.reg'" <<<"$INDEX_EXCL"; then
+    ok "Indexeur de fichiers : préfixes Wine exclus"
+else
+    warn "Indexeur de fichiers : préfixes Wine non exclus (« gsettings reset org.freedesktop.Tracker3.Miner.Files ignored-directories-with-content »)"
 fi
 
 # / est en lecture seule (composefs) et affiche toujours 0 : l'espace utile est celui de /var

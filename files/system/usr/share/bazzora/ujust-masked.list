@@ -6,6 +6,9 @@
 # --- Paquet retiré par le debloat (recette cassée) ---
 add-updater-to-steam
 
+# --- Paquet retiré par le debloat (OpenRazer) ---
+install-openrazer
+
 # --- Matériel non AMD ---
 toggle-nvk
 toggle-i915-sleep-fix

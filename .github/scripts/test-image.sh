@@ -148,7 +148,7 @@ for fichier in \
     /etc/profile.d/bazzora-starship.sh \
     /etc/fastfetch/config.jsonc \
     /usr/share/bazzora/flatpak/overrides-global \
-    /usr/share/backgrounds/bazzora/background.png \
+    /usr/share/backgrounds/bazzora/background.jpg \
     /usr/share/icons/Bibata-Modern-Ice/index.theme \
     /usr/share/icons/default/index.theme \
     /usr/libexec/bazzora/pin-deployment \
@@ -189,6 +189,12 @@ if dans_image grep -q "Bienvenue sur Bazzora" /usr/share/ublue-os/motd/template.
     ok "bannière d'accueil Bazzora"
 else
     ko "bannière d'accueil non personnalisée"
+fi
+# Raccourcis clavier : fournis par le fichier dconf de Bazzite, qui doit rester en place
+if dans_image grep -q "ptyxis --new-window" /etc/dconf/db/distro.d/00-bazzite-desktop-silverblue-global; then
+    ok "raccourcis clavier Bazzite conservés (Ctrl+Alt+T, Mission Center)"
+else
+    ko "raccourcis clavier absents de /etc/dconf/db/distro.d/00-bazzite-desktop-silverblue-global"
 fi
 if dans_image test -e /usr/share/ublue-os/motd/tips/20-bazzite.md; then
     ko "astuces Bazzite (Lutris, Waydroid) encore présentes"
@@ -232,6 +238,16 @@ for cle in "org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice'" \
     read -r schema nom attendu <<<"$cle"
     VALEUR=$(lire "$schema" "$nom")
     [ "$VALEUR" = "$attendu" ] && ok "$schema $nom = $VALEUR" || ko "$schema $nom = ${VALEUR:-illisible} ($attendu attendu)"
+done
+
+# Indexeur LocalSearch : préfixes Wine et bibliothèques de jeux exclus
+for cle in "ignored-directories-with-content system.reg" "ignored-directories compatdata"; do
+    read -r nom attendu <<<"$cle"
+    if lire org.freedesktop.Tracker3.Miner.Files "$nom" | grep -q "'$attendu'"; then
+        ok "indexeur : $nom contient $attendu"
+    else
+        ko "indexeur : $nom ne contient pas $attendu"
+    fi
 done
 
 if dans_image python3 -c 'import json; json.load(open("/etc/fastfetch/config.jsonc"))' 2>/dev/null; then
