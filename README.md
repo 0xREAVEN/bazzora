@@ -32,14 +32,14 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 * Watchdogs actifs (récupération après un blocage complet) : `ujust configure-watchdog` pour les désactiver.
 * Délai de 20 s avant la fenêtre *« L'application ne répond pas »*.
 * Upgrade FSR 4 global pour les Radeon RDNA 4 : `ujust global-fsr4`.
+* Police Fira Code et symboles Nerd Fonts (paquet `nerd-fonts`, repli fontconfig) : utilisés par le terminal et le prompt Starship.
 * Raccourcis `Ctrl+Alt+T` (Ptyxis) et `Ctrl+Maj+Échap` (Mission Center).
 
 ## Ajouts
 
 * **Paquets RPM** : [LACT](https://github.com/ilya-zlobintsev/LACT) (COPR `ilyaz/LACT`) avec le démon `lactd` activé au démarrage,
   Starship (COPR `atim/starship`), GParted, Papirus, gnome-initial-setup.
-* **Curseur Bibata Modern Ice** (version figée, empreinte SHA-256 vérifiée au build), thème sombre `adw-gtk3-dark`, icônes Papirus-Dark,
-  polices Nerd Fonts (FiraCode, JetBrainsMono, Hack).
+* **Curseur Bibata Modern Ice** (version figée, empreinte SHA-256 vérifiée au build), thème sombre `adw-gtk3-dark`, icônes Papirus-Dark.
 * **Flatpaks installés au premier démarrage** : applications GNOME de base, Firefox, Mission Center, Flatseal, Warehouse,
   Gear Lever, Extension Manager, Refine, Heroic, Faugus Launcher, ProtonPlus, GOverlay (liste dans [recipe.yml](recipes/recipe.yml)).
 * **Bureau GNOME épuré** : seules les extensions AppIndicator (active) et GSConnect sont conservées.

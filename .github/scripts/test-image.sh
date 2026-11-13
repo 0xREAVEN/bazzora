@@ -155,7 +155,10 @@ for fichier in \
     /usr/libexec/bazzora/doctor \
     /usr/share/bazzora/ujust-masked.list \
     /usr/lib/tuned/profiles/throughput-performance-bazzora/tuned.conf \
-    /usr/share/ublue-os/motd/tips/20-bazzora.md; do
+    /usr/share/ublue-os/motd/tips/20-bazzora.md \
+    /usr/share/fonts/fira-code/FiraCode-Regular.ttf \
+    /usr/share/fonts/nerd-fonts/SymbolsNerdFont-Regular.ttf \
+    /etc/fonts/conf.d/10-nerd-font-symbols.conf; do
     if dans_image test -s "$fichier"; then ok "$fichier"; else ko "$fichier manquant ou vide"; fi
 done
 
