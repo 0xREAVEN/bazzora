@@ -142,6 +142,7 @@ section "5. Fichiers de configuration"
 for fichier in \
     /etc/environment.d/10-amd-gaming.conf \
     /etc/sysctl.d/99-bazzora-gaming.conf \
+    /etc/sysctl.d/99-bazzora-anticheat.conf \
     /etc/tmpfiles.d/bazzora-flatpak.conf \
     /etc/tmpfiles.d/bazzora-thp.conf \
     /etc/tmpfiles.d/bazzora-anticheat.conf \
