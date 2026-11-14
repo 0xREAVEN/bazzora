@@ -144,6 +144,7 @@ for fichier in \
     /etc/sysctl.d/99-bazzora-gaming.conf \
     /etc/tmpfiles.d/bazzora-flatpak.conf \
     /etc/tmpfiles.d/bazzora-thp.conf \
+    /etc/tmpfiles.d/bazzora-anticheat.conf \
     /etc/profile.d/bazzora-firstrun.sh \
     /etc/profile.d/bazzora-starship.sh \
     /etc/fastfetch/config.jsonc \
@@ -217,7 +218,8 @@ else
 fi
 
 if dans_image systemd-tmpfiles --dry-run --create \
-        /etc/tmpfiles.d/bazzora-flatpak.conf /etc/tmpfiles.d/bazzora-thp.conf >/tmp/tmpfiles.log 2>&1; then
+        /etc/tmpfiles.d/bazzora-flatpak.conf /etc/tmpfiles.d/bazzora-thp.conf \
+        /etc/tmpfiles.d/bazzora-anticheat.conf >/tmp/tmpfiles.log 2>&1; then
     ok "règles tmpfiles.d valides"
 else
     ko "règles tmpfiles.d invalides"
