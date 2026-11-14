@@ -137,6 +137,14 @@ fi
 SWAP=$(swapon --noheadings --show=NAME 2>/dev/null | grep -c zram || true)
 [ "${SWAP:-0}" -ge 1 ] && ok "Swap ZRAM actif" || warn "Aucun swap ZRAM actif"
 
+# Prérequis Easy Anti-Cheat Linux v2 appliqués par Bazzora (détail complet : « ujust check-anticheat »)
+LOCKDOWN=$(sed -n 's/.*\[\(.*\)\].*/\1/p' /sys/kernel/security/lockdown 2>/dev/null)
+case "$LOCKDOWN" in
+    integrity|confidentiality) ok "Lockdown du noyau : $LOCKDOWN" ;;
+    *) ko "Lockdown du noyau : ${LOCKDOWN:-indisponible} (integrity attendu, voir « systemctl status systemd-tmpfiles-setup »)" ;;
+esac
+[ "$(cat /proc/sys/kernel/kexec_load_disabled 2>/dev/null)" = "1" ] && ok "Kexec désactivé" || ko "Kexec actif (kernel.kexec_load_disabled = 0)"
+
 for unite in cockpit.socket cockpit.service; do
     ETAT=$(systemctl is-enabled "$unite" 2>/dev/null || true)
     [ "$ETAT" = "masked" ] && ok "$unite masqué" || ko "$unite non masqué ($ETAT)"
