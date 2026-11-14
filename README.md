@@ -79,6 +79,9 @@ Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 88 paquets
   btrfs-assistant (inactifs tant que `ujust configure-snapshots` / `configure-beesd` ne les activent pas),
   outils Framework, CEC, lecteur d'empreintes. Cockpit est installé mais ses services sont masqués.
 
+L'initramfs est reconstruit pendant le build : sans cela, celui de Bazzite continuerait de charger au démarrage
+les modules retirés (adaptateur GameCube, Looking Glass, System76).
+
 Les recettes ujust de Bazzite sans objet ici (Steam Deck, Decky, Framework, Nvidia, Intel, CEC…) sont masquées
 de la liste mais restent appelables par leur nom : voir [ujust-masked.list](files/system/usr/share/bazzora/ujust-masked.list).
 
