@@ -143,7 +143,7 @@ case "$LOCKDOWN" in
     integrity|confidentiality) ok "Lockdown du noyau : $LOCKDOWN" ;;
     *) ko "Lockdown du noyau : ${LOCKDOWN:-indisponible} (integrity attendu, voir « systemctl status systemd-tmpfiles-setup »)" ;;
 esac
-[ "$(cat /proc/sys/kernel/kexec_load_disabled 2>/dev/null)" = "1" ] && ok "Kexec désactivé" || ko "Kexec actif (kernel.kexec_load_disabled = 0)"
+[ "$(cat /proc/sys/kernel/kexec_load_disabled 2>/dev/null)" = "1" ] && ok "Kexec désactivé" || ko "Kexec actif (kernel.kexec_load_disabled = 0, voir « systemctl status systemd-sysctl »)"
 
 for unite in cockpit.socket cockpit.service; do
     ETAT=$(systemctl is-enabled "$unite" 2>/dev/null || true)

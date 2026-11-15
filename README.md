@@ -57,7 +57,7 @@ Aucun gain de performance n'est revendiqué : les réglages ci-dessous n'ont pas
 | THP | `defrag = defer+madvise`, `max_ptes_none = 409` | Change la politique de défragmentation des huge pages (elles restent en mode `madvise`). | [bazzora-thp.conf](files/system/etc/tmpfiles.d/bazzora-thp.conf) |
 | Audio | PipeWire `min-quantum = 256` | Plancher anti-craquements : aucune application ne descend sous 256 échantillons (≈ 5,3 ms à 48 kHz). Le quantum par défaut reste 1024 ; ce n'est pas une baisse de latence. | [10-bazzora-gaming.conf](files/system/etc/pipewire/pipewire.conf.d/10-bazzora-gaming.conf) |
 | Souris | `accel-profile = 'flat'` | Pas d'accélération du pointeur. | [debloat.sh](files/scripts/debloat.sh) |
-| Anti-triche | lockdown `integrity`, `kexec_load_disabled = 1` | Prérequis d'Easy Anti-Cheat Linux v2 (`ujust check-anticheat`). Interdit de modifier le noyau en cours d'exécution : modules non signés, `/dev/mem`, registres CPU (undervolt du processeur par logiciel), hibernation. Sans effet sur LACT. | [bazzora-anticheat.conf](files/system/etc/tmpfiles.d/bazzora-anticheat.conf) |
+| Anti-triche | lockdown `integrity`, `kexec_load_disabled = 1` | Prérequis d'Easy Anti-Cheat Linux v2 (`ujust check-anticheat`). Interdit de modifier le noyau en cours d'exécution : modules non signés, `/dev/mem`, registres CPU (undervolt du processeur par logiciel), hibernation. Sans effet sur LACT. | [bazzora-anticheat.conf](files/system/etc/tmpfiles.d/bazzora-anticheat.conf), [99-bazzora-anticheat.conf](files/system/etc/sysctl.d/99-bazzora-anticheat.conf) |
 | Indexeur de fichiers | préfixes Wine (`system.reg`), `drive_c`, `compatdata`, `steamapps`, `shadercache` exclus | LocalSearch n'analyse plus les exécutables Windows des jeux (boucle d'erreurs et fuite mémoire constatées avec localsearch 3.12). | idem |
 
 ## Retraits
@@ -78,6 +78,9 @@ Liste complète et commentée dans [recipe.yml](recipes/recipe.yml) : 88 paquets
   DisplayLink, `ds-inhibit` (manettes PlayStation), cardwire (gestion de l'iGPU du 9800X3D), snapper, bees et
   btrfs-assistant (inactifs tant que `ujust configure-snapshots` / `configure-beesd` ne les activent pas),
   outils Framework, CEC, lecteur d'empreintes. Cockpit est installé mais ses services sont masqués.
+
+L'initramfs est reconstruit pendant le build : sans cela, celui de Bazzite continuerait de charger au démarrage
+les modules retirés (adaptateur GameCube, Looking Glass, System76).
 
 Les recettes ujust de Bazzite sans objet ici (Steam Deck, Decky, Framework, Nvidia, Intel, CEC…) sont masquées
 de la liste mais restent appelables par leur nom : voir [ujust-masked.list](files/system/usr/share/bazzora/ujust-masked.list).

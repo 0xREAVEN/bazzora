@@ -214,5 +214,11 @@ modules:
   # 6. Intégration des commandes ujust personnalisées (60-bazzora.just)
   - type: justfiles
 
-  # 7. Signature de l'image
+  # 7. Reconstruction de l'initramfs
+  # L'initramfs de Bazzite embarque les modules listés dans modules-load.d au moment de son build :
+  # sans reconstruction, les modules retirés plus haut (gcadapter_oc, kvmfr, System76, agents de VM…)
+  # continuent de se charger au démarrage. À garder après tous les modules qui modifient le système.
+  - type: initramfs
+
+  # 8. Signature de l'image
   - type: signing

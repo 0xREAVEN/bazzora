@@ -126,6 +126,22 @@ else
     ko "paquets interdits détectés :"
     sed 's/^/    /' <<<"$INTERDITS"
 fi
+
+# Initramfs reconstruit : les modules noyau et règles de chargement retirés n'y sont plus
+INITRAMFS=$(dans_image bash -c 'lsinitrd /usr/lib/modules/*/initramfs.img' 2>&1 || true)
+if ! grep -q "systemd-modules-load" <<<"$INITRAMFS"; then
+    ko "initramfs illisible"
+    sed 's/^/    /' <<<"$INITRAMFS" | tail -10
+else
+    # Modules hors noyau des paquets retirés et leurs règles modules-load.d
+    RESTES=$(grep -oE '(extra/(gcadapter_oc|kvmfr|system76|openrazer)[^ ]*|modules-load\.d/(gcadapter_oc|kvmfr|system76-driver|system76-io|open-vm-tools)\.conf)' <<<"$INITRAMFS" | sort -u || true)
+    if [ -z "$RESTES" ]; then
+        ok "initramfs sans les modules retirés"
+    else
+        ko "initramfs non reconstruit, éléments retirés encore présents :"
+        sed 's/^/    /' <<<"$RESTES"
+    fi
+fi
 fin
 
 # -----------------------------------------------------------------------------
@@ -142,6 +158,7 @@ section "5. Fichiers de configuration"
 for fichier in \
     /etc/environment.d/10-amd-gaming.conf \
     /etc/sysctl.d/99-bazzora-gaming.conf \
+    /etc/sysctl.d/99-bazzora-anticheat.conf \
     /etc/tmpfiles.d/bazzora-flatpak.conf \
     /etc/tmpfiles.d/bazzora-thp.conf \
     /etc/tmpfiles.d/bazzora-anticheat.conf \
