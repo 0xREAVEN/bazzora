@@ -39,7 +39,7 @@ jobs:
       id-token: write
     steps:
       - name: Construction et signature (BlueBuild)
-        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11.1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -65,7 +65,7 @@ jobs:
       os_version: ${{ steps.candidate.outputs.os_version }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Libération d'espace disque
         run: |
@@ -100,7 +100,7 @@ jobs:
           echo "base_image=${BASE}" >> "$GITHUB_OUTPUT"
 
       - name: Installation de Cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
 
       - name: Vérification de la signature Cosign
         run: cosign verify --key cosign.pub "${IMAGE}@${{ steps.candidate.outputs.digest }}" > /dev/null
@@ -123,7 +123,7 @@ jobs:
       DIGEST: ${{ needs.test.outputs.digest }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Libération d'espace disque
         run: |
@@ -165,7 +165,7 @@ jobs:
 
       - name: Journal de la console série
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-serie
           path: serial.log
